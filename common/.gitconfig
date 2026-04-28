@@ -1,0 +1,12 @@
+[user]
+	name = Aleksandr-Mazhul
+	email = map07102007@gmial.com
+[credential]
+	helper = osxkeychain
+[core]
+	autocrlf = input
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

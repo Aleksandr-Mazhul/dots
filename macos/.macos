@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# macOS defaults can be added here.
+# Keep this script idempotent.
