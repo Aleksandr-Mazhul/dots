@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.sketchybar.calendar.timer</string>
+  
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>source ~/.config/sketchybar/colors.sh &amp;&amp; CONFIG_DIR=~/.config/sketchybar ~/.config/sketchybar/plugins/calendar.sh</string>
+  </array>
+  
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict>
+      <key>Minute</key>
+      <integer>0</integer>
+    </dict>
+  </array>
+  
+  <key>StandardOutPath</key>
+  <string>/tmp/sketchybar-calendar.log</string>
+  
+  <key>StandardErrorPath</key>
+  <string>/tmp/sketchybar-calendar-error.log</string>
+  
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>
