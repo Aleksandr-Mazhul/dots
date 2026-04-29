@@ -8,8 +8,8 @@ config.font_size = 19
 config.enable_tab_bar = false
 config.window_decorations = "RESIZE"
 config.window_background_opacity = 0.85
-config.colors = require("wezterm.modules.colors")
-config.keys = require("wezterm.modules.keys")(act)
+config.colors = require("modules.colors")
+config.keys = require("modules.keys")(act)
 
 local home = wezterm.home_dir or os.getenv("HOME")
 local target = wezterm.target_triple or ""

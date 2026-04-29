@@ -1,293 +1,359 @@
-# 🎯 Dotfiles with GNU Stow
+# 🔧 macOS Dotfiles
 
-Modular dotfiles for **macOS** and **Linux** using **GNU Stow** for clean, maintainable symlink management.
+Чистый репозиторий конфигурационных файлов для macOS с поддержкой Linux.
 
-## 🏗️ Structure
+## 📦 Что входит
+
+- **Neovim** - конфигурация редактора (Lua, Lazy.nvim)
+- **tmux** - сессии терминала с кроссплатформенной поддержкой
+- **WezTerm** - современный терминал с красивой конфигурацией
+- **Zsh** - модульная оболочка (base, exports, aliases, functions, completion, plugins)
+- **Starship** - быстрый кастомный prompt
+- **Yazi** - файловый менеджер TUI
+- **Lazygit** - интерактивный git UI
+- **GitHub CLI** - конфигурация gh
+- **Homebrew** - список пакетов (Brewfile)
+- **Git** - основной и локальный конфиги
+- **Прочее:** AeroSpace, Borders, Kanata, Karabiner, Sketchybar
+
+## 🚀 Быстрый старт (с нуля)
+
+### 1. Клонировать репозиторий
+```bash
+cd ~
+git clone https://github.com/your-username/dotfiles.git
+cd dotfiles
+```
+
+### 2. Запустить bootstrap
+```bash
+bash scripts/bootstrap-macos.sh
+```
+
+Этот скрипт:
+- ✅ Установит GNU Stow (если нет)
+- ✅ Установит пакеты из Brewfile
+- ✅ Создаст symlinks для всех конфигов
+- ✅ Загрузит модули Zsh
+
+## 📁 Структура
 
 ```
 dotfiles/
-├── common/              # Shared configs (nvim, tmux, wezterm, git, etc.)
+├── common/                    # Общие конфиги (macOS + Linux)
 │   ├── .config/
-│   ├── .zsh/            # Modular shell functions
-│   ├── .zshrc
-│   ├── .gitconfig
-│   ├── .tmux.conf
-│   └── Brewfile         # Homebrew dependencies
+│   │   ├── nvim/              # Neovim (Lua, Lazy, LSP, Copilot)
+│   │   ├── wezterm/           # WezTerm с модулями colors/keys
+│   │   ├── yazi/              # Файловый менеджер
+│   │   ├── lazygit/           # Git UI
+│   │   ├── starship.toml       # Prompt
+│   │   ├── ghostty/           # Ghostty (опционально)
+│   │   ├── gh/                # GitHub CLI
+│   │   └── github-copilot/    # GitHub Copilot (в private/)
+│   ├── .zsh/                  # Модули Zsh (загружаются в .zshrc)
+│   │   ├── base.zsh           # Базовые опции
+│   │   ├── exports.zsh        # Переменные окружения
+│   │   ├── aliases.zsh        # Aliases (ll, lg, и т.д.)
+│   │   ├── functions.zsh      # Shell функции
+│   │   ├── completion.zsh     # Completion системы
+│   │   └── plugins.zsh        # Plugin менеджеры
+│   ├── .zshrc                 # Главный конфиг оболочки
+│   ├── .gitconfig             # Git конфиг (user.name, user.email)
+│   ├── .gitignore_global      # Глобальный .gitignore
+│   ├── .p10k.zsh              # Powerlevel10k prompt
+│   ├── .tmux.conf             # tmux конфиг
+│   ├── .ideavimrc             # IdeaVim (для JetBrains IDE)
+│   ├── .wezterm.lua           # Альтернативная загрузка WezTerm
+│   └── Brewfile               # Homebrew пакеты
 │
-├── macos/               # macOS-specific configs
-│   ├── .config/         # sketchybar, karabiner, kanata, borders
-│   ├── .zprofile
+├── macos/                     # macOS-специфичные конфиги
+│   ├── .config/
+│   │   ├── borders/           # Window borders decoration
+│   │   ├── kanata/            # Раскладка клавиатуры (Karabiner замена)
+│   │   ├── karabiner/         # Ремапирование клавиш
+│   │   ├── sketchybar/        # Статус бар (замена Menu Bar)
+│   │   ├── tmux/              # macOS-специфичные tmux настройки
+│   │   └── wezterm/           # macOS override для WezTerm
 │   ├── .zsh/
-│   └── .aerospace.toml
+│   │   └── macos.zsh          # macOS-специфичные переменные (ssh-agent, и т.д.)
+│   ├── .zprofile              # macOS login shell (PATH и т.д.)
+│   ├── .aerospace.toml        # Window manager AeroSpace
+│   ├── .gitconfig.local       # Локальные git настройки (НЕ коммитятся!)
+│   └── .macos                 # macOS startup скрипт
 │
-├── linux/               # Linux-specific configs
+├── linux/                     # Linux-специфичные конфиги (skeleton)
 │   ├── .config/
+│   │   ├── wezterm/
+│   │   │   └── linux.lua       # Linux override для WezTerm
+│   │   └── tmux/
+│   │       └── linux.conf      # Linux-специфичные tmux настройки
 │   └── .zsh/
+│       └── linux.zsh          # Linux-специфичные переменные
 │
 ├── hosts/
-│   └── macbook/         # Host-specific overrides
+│   └── macbook/               # Машина-специфичные конфиги (HOSTNAME-specific)
+│       ├── .config/
 │       └── .zsh/
+│           └── host.zsh       # Только для этой машины
 │
-├── private/             # 🔐 Secrets (NOT in git)
-│   └── .zsh.private     # tokens, credentials
+├── private/                   # ❌ НЕ КОММИТЯТСЯ (в .gitignore)
+│   ├── .config/
+│   │   ├── github-copilot/    # GitHub OAuth токены
+│   │   │   ├── apps.json      # App credentials
+│   │   │   └── oauth.json     # OAuth tokens
+│   │   └── gh/
+│   │       └── hosts.yml      # GitHub hosts config
+│   └── .zsh.private           # Приватные экспорты (API ключи, и т.д.)
 │
-├── scripts/             # Bootstrap automation
-│   ├── bootstrap-macos.sh
-│   ├── bootstrap-linux.sh
-│   └── install-stow.sh
+├── scripts/
+│   ├── bootstrap-macos.sh     # Полная установка для macOS (стартовый скрипт)
+│   ├── bootstrap-linux.sh     # Полная установка для Linux
+│   ├── install-stow.sh        # Установка GNU Stow (если нужен)
+│   └── sync.sh                # Синхронизация изменений (pull + restow)
 │
-└── README.md
+├── .gitignore                 # Исключить private/, *.local, .env, и т.д.
+├── README.md                  # Этот файл
+└── LICENSE
 ```
 
-## 🚀 Quick Start
+## 🔧 Использование
 
-### macOS
+### Добавить новый конфиг
 
+Пример: добавить конфиг для Rust-tool
+
+1. **Скопировать конфиг в dotfiles**
 ```bash
-# Clone the repo
-git clone https://github.com/yourusername/dotfiles ~/dotfiles
-cd ~/dotfiles
+# Если инструмент кроссплатформенный (общий):
+mkdir -p ~/dotfiles/common/.config/rust-tool
+cp -r ~/.config/rust-tool/* ~/dotfiles/common/.config/rust-tool/
 
-# Run bootstrap
-./scripts/bootstrap-macos.sh
-
-# Or manually:
-# brew install stow
-# stow common
-# stow macos
-# stow hosts/macbook
+# Если macOS-специфичный:
+mkdir -p ~/dotfiles/macos/.config/rust-tool
+cp -r ~/.config/rust-tool/* ~/dotfiles/macos/.config/rust-tool/
 ```
 
-### Linux
-
+2. **Удалить оригинал и создать symlink**
 ```bash
-git clone https://github.com/yourusername/dotfiles ~/dotfiles
-cd ~/dotfiles
-./scripts/bootstrap-linux.sh
+# Удалим оригинал (он теперь в dotfiles!)
+rm -rf ~/.config/rust-tool
+
+# Создадим symlink на dotfiles версию:
+ln -s ~/dotfiles/common/.config/rust-tool ~/.config/rust-tool
+# или для macOS:
+ln -s ~/dotfiles/macos/.config/rust-tool ~/.config/rust-tool
 ```
 
-## 📋 What's Configured
-
-✅ **Shell (Zsh)**
-- Modular zsh config in `.zsh/` (aliases, exports, functions, completions, plugins)
-- Platform-specific overrides (macos.zsh, linux.zsh)
-- Host-specific setup (host.zsh)
-
-✅ **Editors**
-- Neovim with LazyVim
-- IdeaVim
-
-✅ **Terminal & Multiplexers**
-- WezTerm (cross-platform)
-- tmux
-- starship prompt
-- p10k theme
-
-✅ **CLI Tools**
-- lazygit
-- yazi (file manager)
-- GitHub CLI
-- fzf
-
-✅ **macOS-Only**
-- AeroSpace (tiling window manager)
-- Karabiner (key remapping)
-- Kanata (keyboard config)
-- SketchyBar (menu bar)
-- Borders
-
-✅ **Git**
-- Unified .gitconfig
-- Platform-specific local overrides (.gitconfig.local)
-- Global .gitignore
-
-✅ **Package Management**
-- Homebrew Brewfile for dependencies
-
-## 🔧 How to Use
-
-### Verify Symlinks Are Correct
-
-After bootstrap, check that configs are symlinked (not copied):
-
-```bash
-# Should show symlinks pointing to ~/dotfiles:
-ls -la ~/.zshrc
-ls -la ~/.config/nvim
-ls -la ~/.tmux.conf
-ls -la ~/.config/starship.toml
-
-# Example output:
-# .zshrc -> dotfiles/common/.zshrc
-# .config/nvim/init.lua -> ../../dotfiles/common/.config/nvim/init.lua
-```
-
-### Add a New Config
-
-1. Place the file in the correct package directory:
-   - `common/` for cross-platform files
-   - `macos/` for macOS-specific
-   - `linux/` for Linux-specific
-   - `hosts/macbook/` for host-specific
-
-2. Re-stow the package:
+3. **Добавить в git и коммитить**
 ```bash
 cd ~/dotfiles
-stow -R common  # -R to restow (replace existing)
-# or re-run the full bootstrap
+git add -A
+git commit -m "Add rust-tool config"
+git push
 ```
 
-### Update Configs
+### Обновить конфиги (sync)
 
+После изменения конфига:
+```bash
+cd ~/dotfiles
+bash scripts/sync.sh
+```
+
+Этот скрипт:
+- 🔄 Стягивает последние изменения (git pull)
+- 🔗 Пересоздаёт symlinks (stow -R)
+
+### Откатить если что-то сломалось
+
+```bash
+# Восстановить backup
+cp -R ~/dotfiles.backup-20260429-033411/* ~/dotfiles/
+
+# Или просто переустановить symlinks:
+cd ~/dotfiles
+bash scripts/bootstrap-macos.sh
+```
+
+## 🔐 Секреты и Приватные Конфиги
+
+**НИКОГДА не коммитьте токены, пароли, credentials!**
+
+Используйте `private/` для всего, что содержит:
+- 🔑 API ключи
+- 🔐 OAuth tokens
+- 🛡️ SSH ключи
+- 💳 Credentials
+
+**private/** папка автоматически исключена в .gitignore.
+
+Пример (.zsh.private):
+```bash
+# private/.zsh.private
+export GITHUB_TOKEN="ghp_..."
+export AWS_SECRET_ACCESS_KEY="..."
+```
+
+Загружайте в .zshrc:
+```bash
+# .zshrc
+[ -f ~/.zsh.private ] && source ~/.zsh.private
+```
+
+## 🖥️ Добавить новую машину (Linux или другую macOS)
+
+### Новый хост (машина-специфичные конфиги):
+```bash
+cd ~/dotfiles
+mkdir -p hosts/laptop-name/.config
+mkdir -p hosts/laptop-name/.zsh
+
+# Добавить машина-специфичные конфиги
+echo "export HOSTNAME_SPECIFIC_VAR=value" > hosts/laptop-name/.zsh/host.zsh
+```
+
+### Новая платформа (Linux):
+
+1. Обновить **linux/.zsh/** с Linux-специфичными переменными
+2. Обновить **linux/.config/** с Linux конфигами (если нужны)
+3. Запустить bootstrap-linux.sh:
+```bash
+bash scripts/bootstrap-linux.sh
+```
+
+## 📜 Что делают скрипты?
+
+### 1. `bootstrap-macos.sh`
+**Полная установка для macOS с нуля**
+
+Что делает:
+```
+1. Проверяет GNU Stow (устанавливает если нет)
+2. Устанавливает Homebrew пакеты (из Brewfile)
+3. Создаёт symlinks для всех конфигов:
+   - common/
+   - macos/
+   - hosts/macbook/
+4. Выводит итоговое сообщение
+```
+
+Когда использовать: **Первая установка на новой машине**
+
+### 2. `bootstrap-linux.sh`
+**Полная установка для Linux**
+
+Похож на macos.sh, но:
+- Не использует brew (вместо этого apt/yum/pacman)
+- Стоует `common` + `linux` (не macos)
+
+### 3. `install-stow.sh`
+**Установка GNU Stow (вспомогательный)**
+
+Что делает:
+```
+1. Проверяет есть ли stow в PATH
+2. Если нет - устанавливает:
+   - На macOS: через brew
+   - На Linux: через apt/yum/pacman
+```
+
+Используется: Вызывается из bootstrap скриптов
+
+### 4. `sync.sh`
+**Синхронизация изменений из GitHub**
+
+Что делает:
+```
+1. Стягивает последние изменения: git pull --rebase
+2. Пересоздаёт symlinks: stow -R
+3. Обновляет всё до актуального состояния
+```
+
+Когда использовать: **После git pull или если symlinks сломались**
+
+## 🔄 Workflow: Как это работает?
+
+### Установка:
+```bash
+cd ~
+git clone https://github.com/your-username/dotfiles.git
+cd dotfiles
+bash scripts/bootstrap-macos.sh
+# Теперь ~/.config/nvim → ~/dotfiles/common/.config/nvim
+# И все остальные конфиги подключены!
+```
+
+### День в день:
+```bash
+# Редактируете конфиг (например nvim):
+vim ~/.config/nvim/init.lua
+
+# На самом деле редактируете:
+# ~/dotfiles/common/.config/nvim/init.lua (через symlink!)
+
+# Коммитите изменения:
+cd ~/dotfiles
+git add .
+git commit -m "Update nvim config"
+git push
+```
+
+### Синхронизация на другой машине:
 ```bash
 cd ~/dotfiles
 git pull
-# Changes apply immediately (symlinks)
+bash scripts/sync.sh
+# Все конфиги обновлены!
 ```
 
-### Add a New Machine
-
-1. Create new host directory:
+### Откат:
 ```bash
-mkdir -p hosts/new-hostname
-mkdir -p hosts/new-hostname/.config
-mkdir -p hosts/new-hostname/.zsh
-```
-
-2. Add host-specific overrides to `hosts/new-hostname/`
-
-3. Stow it:
-```bash
+# Если что-то сломалось:
 cd ~/dotfiles
-stow hosts/new-hostname
+git revert <commit-hash>
+bash scripts/sync.sh
 ```
 
-### Add Linux Support
+## 🛠️ Требования
 
-1. Add configs to `linux/`:
-```bash
-mkdir -p linux/.config/nvim  # if using platform-specific nvim
-mkdir -p linux/.zsh
+- macOS 13+ (для bootstrap-macos.sh)
+- Linux Ubuntu 20+, Debian, Fedora, Arch (для bootstrap-linux.sh)
+- Zsh (не bash, так как используются zsh-специфичные функции)
+- Git
+- Homebrew (только для macOS)
+
+## 📝 Примечания
+
+- Все конфиги хранятся в git как **реальные файлы**
+- Symlinks создаются автоматически в ~/ и ~/.config/
+- `private/` папка **НЕ коммитится** (в .gitignore)
+- Можно безопасно делать `git clone`, `bootstrap`, и ничего не поломается
+
+## 🔗 GNU Stow
+
+Этот репозиторий использует GNU Stow для управления symlinks.
+
+**Что это?** Stow - утилита которая:
+- Берёт файлы из подпапок (common, macos, linux)
+- Создаёт symlinks в родительской папке (~/)
+
+**Зачем?** Чтобы не копировать файлы, а ссылаться на них в git
+
+Пример:
+```
+Структура в git:
+dotfiles/common/.zshrc
+
+После stow:
+~/.zshrc → ~/dotfiles/common/.zshrc (symlink)
 ```
 
-2. Update `linux/.zsh/linux.zsh` with Linux-specific exports
+## 📄 Лицензия
 
-3. On Linux, run:
-```bash
-cd ~/dotfiles
-stow common
-stow linux
-```
+MIT
 
-## 🔐 Managing Secrets
+---
 
-**Never commit secrets to this repo!**
+**Вопросы?** Смотри файл плана или создавай issues в GitHub!
 
-Safe ways to handle credentials:
-
-### Option 1: Local files (gitignored)
-```bash
-# .gitignore includes:
-*.local
-.env
-
-# Create local overrides:
-~/.zshrc.local      # sourced from .zshrc if exists
-~/.gitconfig.local  # included by .gitconfig
-```
-
-### Option 2: Private directory
-```bash
-# dotfiles/private/ is gitignored
-# Add to private/:
-private/.zsh.private    # API tokens, etc.
-
-# Source in .zshrc:
-[[ -r ~/.zsh.private ]] && source ~/.zsh.private
-```
-
-### Option 3: Environment variables
-```bash
-# Use .env file (gitignored)
-# Load with: source ~/.env (or setup in your shell)
-```
-
-## 🔄 Rollback / Unstow
-
-If something breaks:
-
-```bash
-# Unstow a package
-cd ~/dotfiles
-stow -D common      # remove common package
-stow -D macos       # remove macos package
-
-# Or restore from backup (if available)
-cp ~/.zshrc.bak-<timestamp> ~/.zshrc
-```
-
-## 🛠️ Maintenance
-
-### Check Stow Status
-
-```bash
-cd ~/dotfiles
-# List what stow will do (dry run)
-stow --simulate common
-stow --simulate macos
-```
-
-### Find Orphaned Links
-
-```bash
-# Find broken symlinks in home
-find ~/ -maxdepth 1 -type l ! -valid -exec ls -la {} \;
-```
-
-### Update Brewfile
-
-```bash
-cd ~/dotfiles
-brew bundle dump --file=common/Brewfile --force
-git add common/Brewfile
-git commit -m "Update Brewfile"
-```
-
-## 🆘 Troubleshooting
-
-### "ERROR: could not expand target"
-
-This usually means stow found an existing file that isn't owned by stow.
-- **Solution**: Back it up and delete it, then restow:
-```bash
-mv ~/.zshrc ~/.zshrc.backup
-cd ~/dotfiles && stow common
-```
-
-### Symlinks point to wrong path
-
-Check the symlink:
-```bash
-ls -la ~/.zshrc
-# If it shows: .zshrc -> /old/path/...
-# Delete it and restow:
-rm ~/.zshrc
-cd ~/dotfiles && stow common
-```
-
-### Shell doesn't load after stowing
-
-Verify the symlink exists and is correct:
-```bash
-cat ~/.zshrc  # should show content from dotfiles, not an error
-exec $SHELL   # reload shell
-```
-
-## 📖 Further Reading
-
-- [GNU Stow Manual](https://www.gnu.org/software/stow/manual/)
-- [Why Stow?](https://www.gnu.org/software/stow/manual/stow.html#Introduction)
-
-## 📝 License
-
-Personal dotfiles. Feel free to adapt and use in your setup.
+Удачи с конфигурацией! 🚀
