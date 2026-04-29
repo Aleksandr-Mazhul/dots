@@ -80,3 +80,18 @@ y() {
   fi
   rm -f -- "$tmp"
 }
+
+# SSH key permissions validation
+check_ssh_keys() {
+  echo "🔐 Checking SSH key permissions..."
+  for key in ~/.ssh/id_*[^.pub]; do
+    if [ -f "$key" ]; then
+      perms=$(stat -f %A "$key")
+      if [ "$perms" != "600" ]; then
+        echo "⚠️  SSH key $key has permissions $perms (should be 600)"
+        chmod 600 "$key"
+        echo "✅ Fixed: $key"
+      fi
+    fi
+  done
+}
