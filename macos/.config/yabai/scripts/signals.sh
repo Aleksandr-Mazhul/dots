@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# signals.sh - Yabai event signal handlers
+# Defines event-driven behaviors for window focus, application launch, etc.
+
+set -e
+
+# Signal: Update bar when window focus changes
+yabai -m signal --add event=window_focused action="sketchybar --trigger window_focus 2>/dev/null || true" 2>/dev/null || true
+
+# Signal: Track mouse position changes (optional - helps with window focus)
+# Disabled by default to prevent cursor jumps
+# yabai -m signal --add event=window_focused action="cliclick m:0,0" 2>/dev/null || true
+
+# Signal: Refresh when a window is created
+yabai -m signal --add event=window_created action="sketchybar --trigger window_focus 2>/dev/null || true" 2>/dev/null || true
+
+# Signal: Ensure new windows respect sublayer rules
+yabai -m signal --add event=window_created action="yabai -m window \$YABAI_WINDOW_ID --sub-layer normal" 2>/dev/null || true
+
+# Signal: Handle Mission Control enter (restore full opacity)
+yabai -m signal --add event=mission_control_enter action="yabai -m config normal_window_opacity 1.0" 2>/dev/null || true
+
+# Signal: Handle Mission Control exit (restore active opacity)
+yabai -m signal --add event=mission_control_exit action="yabai -m config active_window_opacity 1.0" 2>/dev/null || true
+
+# Signal: Refresh on dock restart (yabai may need SA reload)
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa" 2>/dev/null || true
+
+# Signal: Handle display add/remove events
+yabai -m signal --add event=display_added action="sleep 0.5 && sketchybar --trigger display_change 2>/dev/null || true" 2>/dev/null || true
+yabai -m signal --add event=display_removed action="sleep 0.5 && sketchybar --trigger display_change 2>/dev/null || true" 2>/dev/null || true
+
+exit 0

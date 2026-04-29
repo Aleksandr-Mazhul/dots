@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+
+# yabairc - Main yabai configuration file
+# Bootstraps yabai and sources all modular scripts
+
+set -o pipefail
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+
+# Ensure scripts directory exists
+if [[ ! -d "$SCRIPTS_DIR" ]]; then
+  echo "Error: scripts directory not found at $SCRIPTS_DIR" >&2
+  exit 1
+fi
+
+# Export PATH for commands
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# Error logging
+YABAI_LOG="/tmp/yabai.$(whoami).log"
+exec 1> >(tee -a "$YABAI_LOG")
+exec 2> >(tee -a "$YABAI_LOG" >&2)
+
+echo "=== Yabai Config Start: $(date) ===" >&2
+
+# =============================================================================
+# Load Scripting Addition
+# =============================================================================
+echo "Loading yabai scripting addition..." >&2
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa || {
+  echo "Error: Failed to load scripting addition" >&2
+  exit 1
+}
+
+# =============================================================================
+# Global Configuration
+# =============================================================================
+echo "Setting global yabai configuration..." >&2
+
+yabai -m config \
+  mouse_follows_focus on \
+  focus_follows_mouse off \
+  window_placement second_child \
+  window_zoom_persist on \
+  window_shadow off \
+  window_animation_duration 0.0 \
+  window_animation_easing ease_out_circ \
+  window_opacity_duration 0.0 \
+  insert_feedback_color 0xffd75f5f \
+  split_ratio 0.50 \
+  split_type auto \
+  auto_balance off \
+  window_gap 8 \
+  top_padding 8 \
+  bottom_padding 8 \
+  left_padding 8 \
+  right_padding 8 \
+  layout bsp \
+  mouse_modifier fn \
+  mouse_action1 move \
+  mouse_action2 resize \
+  mouse_drop_action swap \
+  external_bar off:0:0
+
+# =============================================================================
+# Initialize Workspaces
+# =============================================================================
+echo "Initializing workspaces..." >&2
+bash "$SCRIPTS_DIR/spaces.sh" init || {
+  echo "Error: Failed to initialize workspaces" >&2
+}
+
+# =============================================================================
+# Source Helper Scripts (Order matters!)
+# =============================================================================
+
+echo "Loading application rules..." >&2
+bash "$SCRIPTS_DIR/rules.sh" || echo "Warning: rules.sh failed" >&2
+
+echo "Loading opacity settings..." >&2
+bash "$SCRIPTS_DIR/opacity.sh" || echo "Warning: opacity.sh failed" >&2
+
+echo "Loading border settings..." >&2
+bash "$SCRIPTS_DIR/borders.sh" || echo "Warning: borders.sh failed" >&2
+
+echo "Loading event signals..." >&2
+bash "$SCRIPTS_DIR/signals.sh" || echo "Warning: signals.sh failed" >&2
+
+# =============================================================================
+# Validate Configuration
+# =============================================================================
+echo "Validating configuration..." >&2
+bash "$SCRIPTS_DIR/spaces.sh" validate || echo "Warning: Space validation failed" >&2
+
+echo "=== Yabai Config Complete: $(date) ===" >&2
+
+exit 0
