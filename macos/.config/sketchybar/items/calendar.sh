@@ -1,9 +1,6 @@
 #!/bin/bash
 
-# Display system time directly from macOS menu bar
-# No scripts, no polling, zero SketchyBar overhead
-# System updates time automatically
-
-sketchybar --add alias "Control Center,NSClockMenulet" right \
-           --set "Control Center,NSClockMenulet" \
-                 icon=􀧞
+sketchybar --add item calendar right \
+           --set calendar icon=<U+1009DE>  \
+                          update_freq=1 \
+                          script="$PLUGIN_DIR/calendar.sh"
