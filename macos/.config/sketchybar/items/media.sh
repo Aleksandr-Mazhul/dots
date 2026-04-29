@@ -8,5 +8,6 @@ sketchybar --add item media e \
                        icon=􀑪             \
                        icon.color=$ACCENT_COLOR   \
                        background.drawing=off \
+                       update_freq=0 \
                        script="$PLUGIN_DIR/media.sh" \
            --subscribe media media_change
