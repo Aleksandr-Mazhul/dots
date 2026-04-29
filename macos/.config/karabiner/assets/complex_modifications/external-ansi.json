@@ -1,0 +1,25 @@
+{
+  "title": "External keyboard ISO -> ANSI backtick",
+  "rules": [
+    {
+      "description": "Map non_us_backslash to grave accent (` ~)",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "non_us_backslash",
+            "modifiers": {
+              "optional": ["any"]
+            }
+          },
+          "to": [
+            {
+              "key_code": "grave_accent_and_tilde"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

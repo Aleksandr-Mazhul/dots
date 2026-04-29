@@ -1,0 +1,20 @@
+{
+  "title": "ISO Fix",
+  "rules": [
+    {
+      "description": "ISO → grave",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "non_us_backslash",
+            "modifiers": { "optional": ["any"] }
+          },
+          "to": [
+            { "key_code": "grave_accent_and_tilde" }
+          ]
+        }
+      ]
+    }
+  ]
+}

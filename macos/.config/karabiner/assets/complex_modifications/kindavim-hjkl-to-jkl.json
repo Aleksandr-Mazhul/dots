@@ -1,0 +1,42 @@
+{
+  "title": "kindaVim: hjkl → jkl; (normal mode)",
+  "rules": [
+    {
+      "description": "Remap hjkl to jkl; when kVnoremap = true",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": { "key_code": "h" },
+          "to": [{ "key_code": "j" }],
+          "conditions": [
+            { "type": "variable_if", "name": "kVnoremap", "value": true }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "j" },
+          "to": [{ "key_code": "k" }],
+          "conditions": [
+            { "type": "variable_if", "name": "kVnoremap", "value": true }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "k" },
+          "to": [{ "key_code": "l" }],
+          "conditions": [
+            { "type": "variable_if", "name": "kVnoremap", "value": true }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "l" },
+          "to": [{ "key_code": "semicolon" }],
+          "conditions": [
+            { "type": "variable_if", "name": "kVnoremap", "value": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

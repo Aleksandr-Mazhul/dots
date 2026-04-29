@@ -1,10 +1,15 @@
-source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
+# --- Powerlevel10k ---
+# Theme is sourced per-platform (macos.zsh / linux.zsh) since install paths differ.
 [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
+# --- FZF ---
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+bindkey -r '^[c'
+bindkey '^I' expand-or-complete
 bindkey '^G' fzf-cd-widget
 
-eval "$(zoxide init zsh)"
+# --- Zoxide ---
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 
-source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# --- Autosuggestions & Syntax Highlighting ---
+# Sourced per-platform (macos.zsh / linux.zsh) since install paths differ.

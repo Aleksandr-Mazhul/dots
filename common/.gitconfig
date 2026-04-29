@@ -1,12 +1,13 @@
 [user]
 	name = Aleksandr-Mazhul
-	email = map07102007@gmial.com
-[credential]
-	helper = osxkeychain
+	email = map07102007@gmail.com
 [core]
 	autocrlf = input
+	excludesFile = ~/.gitignore_global
 [filter "lfs"]
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[include]
+	path = ~/.gitconfig.local

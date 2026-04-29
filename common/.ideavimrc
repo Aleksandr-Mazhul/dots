@@ -1,0 +1,270 @@
+let mapleader = ' '
+
+set number
+set relativenumber
+set scrolloff=5
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+set showcmd
+set matchpairs+=<:>
+set ideajoin
+"set clipboard^=ideaput
+"set clipboard=unnamedplus
+
+set clipboard=unnamedplus,ideaput
+
+nmap Q gq
+
+" ============================================================================
+" BASIC EDITING
+" ========nm===================================================================
+
+nmap \\ "_
+xmap p P
+nmap <Esc> :nohlsearch<cr>
+
+" ============================================================================
+" WINDOW NAVIGATION
+" ============================================================================
+nmap <leader>wh <C-w>h
+nmap <leader>wj <C-w>j
+nmap <leader>wk <C-w>k
+nmap <leader>wl <C-w>l
+
+nmap <leader>sv <Action>(SplitVertically)
+nmap <leader>sh <Action>(SplitHorizontally)
+nmap <leader>us <Action>(Unsplit)
+nmap <leader>ua <Action>(UnsplitAll)
+
+" cmd + shift + [ / ] -- переключение между соседними вкладками
+
+" cmd + [ / ] -- перемещение по истории курсора
+" или же можно использовать vim-подобное перемещение, ctrl + o / i
+
+" cmd + shift + bsp -- переход к месту в котором в последний раз происходило редактирование
+" в vim это g; , и работает он только внутри текущего файла, но почему то у меня оно не хочет работать
+
+" ============================================================================
+" FILE / PROJECT NAVIGATION
+" ============================================================================
+nmap <leader>fe <Action>(SearchEverywhere)
+nmap <leader>fc <Action>(GotoClass)
+nmap <leader>ff <Action>(GotoFile)
+nmap <leader>fs <Action>(GotoSymbol)
+nmap <leader>fa <Action>(GotoAction)
+
+nmap <leader>f <Action>(Find)"поиск по файлу
+nmap <leader>F <Action>(FindInPath) " глобальный поиск по проекту
+nmap <leader>rf <Action>(RecentFiles) " недавние файлы
+nmap <leader>rl <Action>(RecentLocations) "история перемещения курсора
+nmap <leader>fh <Action>(LocalHistory.ShowHistory) " история изменения проекта
+
+
+
+" ============================================================================
+" CODE NAVIGATION
+" ============================================================================
+nmap <leader>gd <Action>(GotoDeclaration)
+" переход к обьявлению функции / символа
+nmap <leader>gh <Action>(SwitchHeaderSource)
+"Переключение .h ↔ .cpp
+nmap <leader>gy <Action>(GotoTypeDeclaration)
+" переход к обьявлению типов:класс, struct, typedef, using, шаблонный параметр и т.д.
+nmap <leader>fu <Action>(FindUsages)
+" список всех использований в проекте
+nmap <leader>su <Action>(ShowUsages)
+"Быстрый popup со списком использований
+
+"nmap <leader>gt <Action>(GotoTest) "пока что не надо
+"nmap <leader>gs <Action>(GotoSuperMethod)"пока что не надо
+"nmap <leader>gi <Action>(GotoImplementation) " пока что не надо
+
+
+
+" ============================================================================
+" REFACTORING
+" ============================================================================
+nmap <leader>rR :action Refactorings.QuickListPopupAction<CR>
+" открывает универсальное меню рефакторинга
+nmap <leader>re <Action>(RenameElement)
+" nnреименовать элемент
+
+xmap <leader>em <Action>(ExtractMethod)
+" берет выделенный кусок кода, создает из него функцию, заменяет исходный код вызовом этой функции
+nmap <leader>em <Action>(ExtractMethod)
+
+xmap <leader>iv <Action>(IntroduceVariable)
+" берет выражение, делает из него переменную, заменяет выражение этой переменной
+nmap <leader>iv <Action>(IntroduceVariable)
+
+xmap <leader>ic <Action>(IntroduceConstant)
+ " тоже самое что и прошлое, только делает не локальную переменную,а константу на уровне файла
+nmap <leader>ic <Action>(IntroduceConstant)
+
+xmap <leader>if <Action>(IntroduceField)
+ " берет выражение, создает из него поле класса, заменяет выражение обращением к этому полю
+nmap <leader>if <Action>(IntroduceField)
+
+nmap <leader>cs <Action>(ChangeSignature)
+" меняет сигнатуру функции
+nmap <leader>sd <Action>(SafeDelete)
+"безопасно удаляет, так лучше удалять функции и методы в больших проектах, что бы не поломать зависимости
+
+xmap <leader>mi <Action>(Inline)
+"обратное к Extract, подставляет значение переменной прямо в выражение
+nmap <leader>mi <Action>(Inline)
+
+
+"nmap <leader>rm <Action>(Move) " пока не надо, переносить что то по файловой системе
+
+
+
+" ============================================================================
+" FORMAT / STYLE
+" ============================================================================
+nmap <leader>rc <Action>(ReformatCode)
+nmap <leader>oi <Action>(OptimizeImports)
+nmap <leader>rrc <Action>(RearrangeCode)
+
+
+
+" ============================================================================
+" CODE GENERATION
+" ============================================================================
+nmap <leader>gc <Action>(Generate)
+" вылазит окошко с генерацией всевозможных вещей
+                                   " по какой-то неведомой мне причине, <leader>ig не всегда создает функцию именно в cpp,
+                                   " поэтому дабы это избежать, можно нажимать opt + enter, и выбирать там Generate Definition
+                                   " nmap <leader>qi <Action>(ShowIntentionActions) можно нажать вот это, и появится такая же менюшка, как и при нажатии
+                                   " shift + enter
+
+"nmap <leader>ii <Action>(ImplementMethods) " пока не надо
+"nmap <leader>io <Action>(OverrideMethods) " пока не надо
+"nmap <leader>is <Action>(GenerateGetterAndSetter) " пока не надо
+
+
+
+" ============================================================================
+" TOOL WINDOWS
+" ============================================================================
+nmap <leader>ot <Action>(ActivateTerminalToolWindow)
+"окно терминала
+nmap <leader>op <Action>(ActivateProjectToolWindow)
+"окно с файловой структурой
+nmap <leader>od <Action>(ActivateDebugToolWindow)
+"окно с дебагом
+
+
+
+" ============================================================================
+" STRUCTURE / ERRORS
+" ============================================================================
+nnoremap <silent> ]m :action MethodDown<CR>
+"перейти к следующему методу
+nnoremap <silent> [m :action MethodUp<CR>
+ " перейти к предыдущему методу
+nnoremap <silent> ]e :action GotoNextError<CR>
+" перейти к следующей ошибке
+nnoremap <silent> [e :action GotoPreviousError<CR>
+" перейти к предыдущей ошибке
+nmap <leader>fS <Action>(FileStructurePopup)
+"менюшка с файловой структурой файла
+
+
+
+" ============================================================================
+" FILE MANAGEMENT
+" ============================================================================
+nmap <leader>nf <Action>(NewFile)
+nmap <leader>nd <Action>(NewDir)
+nmap <leader>fl <Action>(RenameFile)
+nmap <leader>cc <Action>(CloseContent)
+nmap <leader>ce <Action>(CloseAllEditors)
+nmap <leader>of <Action>(OpenFile)
+nmap <leader>rI <Action>(RestartIde)
+
+
+
+" ============================================================================
+" QUICK INFO
+" ============================================================================
+nnoremap <silent> K :action QuickDocumentation<CR>
+"документация по тому, на что наведен курсор
+nmap <leader>qi <Action>(ShowIntentionActions)
+"Открывает меню “лампочки” (quick fixes).
+nmap <leader>qh <Action>(ShowHoverInfo)
+"Пытается показать hover-информацию (как если бы ты навёл мышь).
+nmap <leader>qI <Action>(QuickImplementations)
+"  Показывает список реализаций интерфейса / метода.
+"nmap <leader>qt <Action>(QuickTypeDefinition) "не надо, т.к. в JS не работает. Показывает тип переменной / символа.
+
+
+
+" ============================================================================
+" MOVE LINES
+" ============================================================================
+nnoremap <silent> <leader>j :action MoveStatementDown<CR>
+nnoremap <silent> <leader>k :action MoveStatementUp<CR>
+xnoremap <silent> <leader>j :action MoveStatementDown<CR>
+xnoremap <silent> <leader>k :action MoveStatementUp<CR>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+" ============================================================================
+" RUN / DEBUG (<leader>d*) ( еще не проверял)
+" ============================================================================
+nmap <leader>dr <Action>(Run)
+nmap <leader>dd <Action>(Debug)
+nmap <leader>dc <Action>(RunToCursor)
+nmap <leader>dO <Action>(StepOver)
+nmap <leader>dI <Action>(StepInto)
+nmap <leader>dU <Action>(StepOut)
+nmap <leader>db <Action>(ToggleLineBreakpoint) " Точка останова
+nmap <leader>dB <Action>(Debugger.RemoveAllBreakpoints)
+nmap <leader>ds <Action>(Stop)
+nmap <leader>dp <Action>(Resume)
+
+
+
+" ============================================================================
+" BUILD (<leader>b + m*) (еще не проверял)
+" ============================================================================
+nmap <leader>bm <Action>(CompileProject)
+nmap <leader>bM <Action>(RebuildProject)
+nmap <leader>bc <Action>(CompileFile)
+
+
+
+" ============================================================================
+" TESTING (<leader>t*) ( еще не проверял)
+" ============================================================================
+nmap <leader>tr <Action>(ContextRun)
+nmap <leader>ta <Action>(RunTests)
+nmap <leader>tf <Action>(RerunFailedTests)
+nmap <leader>tt <Action>(Rerun)
+nmap <leader>tc <Action>(RunCoverage)
+
+
+
+" ============================================================================
+" VCS / GIT (<leader>v*) ( наверное не надо т.к. лучше делать это через терминал)
+" ============================================================================
+nmap <leader>vc <Action>(CheckinProject)
+nmap <leader>vp <Action>(Vcs.Push)
+nmap <leader>vu <Action>(Vcs.UpdateProject)
+nmap <leader>va <Action>(Annotate)
+nmap <leader>vl <Action>(Vcs.Show.Log)

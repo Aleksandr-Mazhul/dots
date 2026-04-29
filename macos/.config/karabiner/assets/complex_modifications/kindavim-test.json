@@ -1,0 +1,31 @@
+{
+  "title": "kindavim hjkl -> jkl;",
+  "rules": [
+    {
+      "description": "Remap hjkl to jkl;",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": { "key_code": "h" },
+          "to": [{ "key_code": "j" }]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "j" },
+          "to": [{ "key_code": "k" }]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "k" },
+          "to": [{ "key_code": "l" }]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "l" },
+          "to": [{ "key_code": "semicolon" }]
+        }
+      ]
+    }
+  ]
+}
+

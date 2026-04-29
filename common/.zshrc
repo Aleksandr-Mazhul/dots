@@ -3,6 +3,12 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# Platform overrides first (sets up brew PATH, etc.)
+case "$(uname -s)" in
+  Darwin) [[ -r "$HOME/.zsh/macos.zsh" ]] && source "$HOME/.zsh/macos.zsh" ;;
+  Linux)  [[ -r "$HOME/.zsh/linux.zsh" ]] && source "$HOME/.zsh/linux.zsh" ;;
+esac
+
 for file in \
   "$HOME/.zsh/exports.zsh" \
   "$HOME/.zsh/completion.zsh" \
@@ -13,11 +19,6 @@ for file in \
 do
   [[ -r "$file" ]] && source "$file"
 done
-
-case "$(uname -s)" in
-  Darwin) [[ -r "$HOME/.zsh/macos.zsh" ]] && source "$HOME/.zsh/macos.zsh" ;;
-  Linux)  [[ -r "$HOME/.zsh/linux.zsh" ]] && source "$HOME/.zsh/linux.zsh" ;;
-esac
 
 [[ -r "$HOME/.zsh/host.zsh" ]] && source "$HOME/.zsh/host.zsh"
 [[ -r "$HOME/.zsh.private" ]] && source "$HOME/.zsh.private"

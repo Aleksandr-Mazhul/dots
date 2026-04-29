@@ -1,0 +1,43 @@
+{
+  "title": "kindaVim: jkl; as movement keys",
+  "rules": [
+    {
+      "description": "kindaVim normal mode: jkl; → arrow keys",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": { "key_code": "j" },
+          "to": [{ "key_code": "left_arrow" }],
+          "conditions": [
+            { "type": "variable_if", "name": "kVnoremap", "value": true }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "k" },
+          "to": [{ "key_code": "down_arrow" }],
+          "conditions": [
+            { "type": "variable_if", "name": "kVnoremap", "value": true }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "l" },
+          "to": [{ "key_code": "up_arrow" }],
+          "conditions": [
+            { "type": "variable_if", "name": "kVnoremap", "value": true }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": { "key_code": "semicolon" },
+          "to": [{ "key_code": "right_arrow" }],
+          "conditions": [
+            { "type": "variable_if", "name": "kVnoremap", "value": true }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

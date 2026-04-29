@@ -2,3 +2,6 @@
 .env
 private/
 .DS_Store
+*.bak-*
+automatic_backups/
+*.local
