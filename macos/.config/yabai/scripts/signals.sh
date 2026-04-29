@@ -5,6 +5,8 @@
 
 set -e
 
+yabai -m signal --remove 2>/dev/null || true
+
 # Signal: Update bar when window focus changes
 yabai -m signal --add event=window_focused action="sketchybar --trigger window_focus 2>/dev/null || true" 2>/dev/null || true
 
@@ -25,7 +27,6 @@ yabai -m signal --add event=mission_control_enter action="yabai -m config normal
 yabai -m signal --add event=mission_control_exit action="yabai -m config active_window_opacity 1.0" 2>/dev/null || true
 
 # Signal: Refresh on dock restart (yabai may need SA reload)
-yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa" 2>/dev/null || true
 
 # Signal: Handle display add/remove events
 yabai -m signal --add event=display_added action="sleep 0.5 && sketchybar --trigger display_change 2>/dev/null || true" 2>/dev/null || true

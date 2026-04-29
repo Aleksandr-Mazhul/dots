@@ -5,6 +5,8 @@
 
 set -e
 
+yabai -m rule --remove 2>/dev/null || true
+
 # App to workspace mapping (AeroSpace-like)
 declare -A APP_WORKSPACE=(
   ["WebStorm"]="W"

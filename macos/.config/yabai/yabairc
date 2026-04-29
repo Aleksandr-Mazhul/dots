@@ -30,10 +30,7 @@ echo "=== Yabai Config Start: $(date) ===" >&2
 # =============================================================================
 echo "Loading yabai scripting addition..." >&2
 yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
-sudo yabai --load-sa || {
-  echo "Error: Failed to load scripting addition" >&2
-  exit 1
-}
+sudo yabai --load-sa
 
 # =============================================================================
 # Global Configuration

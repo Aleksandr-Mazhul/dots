@@ -31,7 +31,10 @@ init_workspaces() {
   
   for label in "${!WORKSPACE_MAP[@]}"; do
     local index="${WORKSPACE_MAP[$label]}"
-    yabai -m space --create 2>/dev/null || true
+    current=$(yabai -m query --spaces | jq 'length')
+    if [[ "$current" -lt "$index" ]]; then
+      yabai -m space --create 2>/dev/null || true
+    fi
   done
   
   # Label the spaces

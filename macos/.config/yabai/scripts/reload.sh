@@ -80,23 +80,12 @@ reload_yabai() {
 }
 
 reload_skhd() {
-  log_info "Restarting skhd service..."
+  log_info "Reloading skhd configuration..."
   
-  # Kill existing skhd processes
-  pkill -f "skhd" 2>/dev/null || true
-  sleep 0.5
-  
-  # Start skhd in background
-  skhd --config ~/.config/skhd/skhdrc &
-  sleep 0.5
-  
-  if pgrep -q skhd; then
-    log_info "skhd restarted successfully"
-    return 0
-  else
-    log_error "Failed to start skhd"
+    skhd --reload 2>/dev/null || {
+    log_error "Failed to reload skhd"
     return 1
-  fi
+  }
 }
 
 # Main execution

@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-BORDERS_ENABLED=false       # Set to true to enable borders
+BORDERS_ENABLED=true       # Set to true to enable borders
 
 if ! $BORDERS_ENABLED; then
   exit 0
