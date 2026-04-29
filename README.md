@@ -14,7 +14,10 @@
 - **GitHub CLI** - конфигурация gh
 - **Homebrew** - список пакетов (Brewfile)
 - **Git** - основной и локальный конфиги
-- **Прочее:** AeroSpace, Borders, Kanata, Karabiner, Sketchybar
+- **Window Management:** yabai + skhd (tiling WM with keyboard automation)
+- **Window Focus:** Hammerspoon (intelligent app focus management)
+- **Window Decoration:** Borders (JankyBorders style borders)
+- **Прочее:** Kanata, Karabiner, Sketchybar
 
 ## 🚀 Быстрый старт (с нуля)
 
@@ -36,7 +39,107 @@ bash scripts/bootstrap-macos.sh
 - ✅ Создаст symlinks для всех конфигов
 - ✅ Загрузит модули Zsh
 
-## 📁 Структура
+## ⚙️ macOS-специфичная настройка
+
+### Window Management: yabai + skhd + Hammerspoon
+
+После bootstrap скрипта, необходимо выполнить несколько дополнительных шагов:
+
+#### 1. Yabai - Scripting Addition
+```bash
+# Нагрузить scripting addition (требует password через sudo)
+sudo yabai --load-sa
+
+# Установить в Launch Agents (автозагрузка при старте)
+brew services start yabai
+```
+
+**Если yabai не управляет окнами:**
+- Проверьте System Settings → Privacy & Security → Accessibility (добавьте yabai)
+- SIP (System Integrity Protection) может блокировать. Проверьте:
+  ```bash
+  csrutil status
+  ```
+
+#### 2. skhd - Keyboard Daemon
+```bash
+# Установить в Launch Agents
+brew services start skhd
+
+# Проверить статус
+brew services list | grep skhd
+```
+
+**Горячие клавиши для управления:**
+- `alt + hjkl` - фокус на окнах
+- `alt + shift + hjkl` - переместить окно
+- `alt + 1-9` - переключение рабочих пространств
+- `alt + shift + 1-9` - переместить окно на рабочее пространство
+- `shift + cmd + r` - перезагрузить yabai + skhd
+
+**Reload скрипт:** `~/.config/yabai/scripts/reload.sh`
+
+#### 3. Hammerspoon - App Focus Management
+```bash
+# Hammerspoon должен быть установлен:
+brew install hammerspoon
+
+# Конфиг: ~/.hammerspoon/init.lua
+# Автоматически перенаправляет фокус на существующее окно приложения
+# при повторном открытии (например через Raycast, Dock, Spotlight)
+```
+
+**Требуется разрешение:**
+- System Settings → Privacy & Security → Accessibility (добавьте Hammerspoon)
+
+#### 4. Borders - Window Decoration
+```bash
+# Установлена и настроена в:
+~/.config/borders/bordersrc
+
+# Запуск:
+brew services start borders
+```
+
+### Управление конфигами через GNU Stow
+
+Все конфиги управляются через **GNU Stow** - сим линки создаются автоматически:
+
+```bash
+# Проверить что будет создано (dry-run):
+cd ~/dotfiles
+stow -n -v macos
+
+# Применить:
+stow -S macos
+
+# После изменения (пересоздать):
+stow -R macos
+
+# Удалить symlinks:
+stow -D macos
+```
+
+### Проверка Permissions и SIP
+
+macOS может блокировать некоторые функции yabai из-за SIP:
+
+```bash
+# Проверить SIP статус:
+csrutil status
+
+# Если "enabled", некоторые функции могут не работать
+# Отключить SIP (требует Recovery Mode):
+# 1. Перезагрузиться в Recovery Mode (Cmd + R при старте)
+# 2. Terminal → csrutil disable
+# 3. Перезагрузиться
+
+# После отключения SIP, перезагрузить scripting addition:
+sudo yabai --load-sa
+brew services restart yabai
+```
+
+## 🚀 Быстрый старт (с нуля)
 
 ```
 dotfiles/
@@ -68,12 +171,16 @@ dotfiles/
 │
 ├── macos/                     # macOS-специфичные конфиги
 │   ├── .config/
-│   │   ├── borders/           # Window borders decoration
+│   │   ├── borders/           # Window borders (JankyBorders style)
 │   │   ├── kanata/            # Раскладка клавиатуры (Karabiner замена)
 │   │   ├── karabiner/         # Ремапирование клавиш
 │   │   ├── sketchybar/        # Статус бар (замена Menu Bar)
+│   │   ├── skhd/              # Keyboard hotkey daemon (yabai bindings)
+│   │   ├── yabai/             # Tiling window manager
 │   │   ├── tmux/              # macOS-специфичные tmux настройки
 │   │   └── wezterm/           # macOS override для WezTerm
+│   ├── .hammerspoon/          # Hammerspoon (app focus management)
+│   │   └── init.lua           # App watcher: intelligent focus on app switch
 │   ├── .zsh/
 │   │   └── macos.zsh          # macOS-специфичные переменные (ssh-agent, и т.д.)
 │   ├── .zprofile              # macOS login shell (PATH и т.д.)
