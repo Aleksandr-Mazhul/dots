@@ -14,8 +14,7 @@ for ws in "${WORKSPACES[@]}"; do
     icon.y_offset=1 \
     icon.padding_left=8 \
     icon.padding_right=8 \
-    update_freq=0 \
+    update_freq=1 \
     script="$PLUGIN_DIR/space.sh $ws" \
-    click_script="aerospace workspace $ws" \
-    --subscribe space.$ws aerospace_workspace_change
+    click_script="aerospace workspace $ws"
 done
