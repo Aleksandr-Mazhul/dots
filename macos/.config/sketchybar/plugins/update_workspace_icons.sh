@@ -1,23 +1,10 @@
 #!/bin/bash
 
-# Event-driven workspace update triggered by aerospace events
-# Called when workspace changes or windows change
+for sid in $(aerospace list-workspaces --all); do
 
-SID="$1"
+  apps=$(aerospace list-windows --workspace "$sid" | awk -F'|' '{gsub(/^ *| *$/, "", $2); print $2}')
 
-if [ -z "$SID" ]; then
-  # If no workspace specified, update all (fallback)
-  for sid in $(aerospace list-workspaces --all); do
-    update_workspace "$sid"
-  done
-else
-  update_workspace "$SID"
-fi
-
-update_workspace() {
-  local ws_id="$1"
-  local apps=$(aerospace list-windows --workspace "$ws_id" | awk -F'|' '{gsub(/^ *| *$/, "", $2); print $2}')
-  local icon_strip=""
+  icon_strip=""
 
   if [ "${apps}" != "" ]; then
     while read -r app; do
@@ -25,5 +12,6 @@ update_workspace() {
     done <<<"${apps}"
   fi
 
-  sketchybar --set space.$ws_id label="$icon_strip"
-}
+  sketchybar --set space.$sid label="$icon_strip"
+
+done
