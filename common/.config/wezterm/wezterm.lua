@@ -7,7 +7,8 @@ config.font = wezterm.font("MesloLGS Nerd Font Mono")
 config.font_size = 19
 config.enable_tab_bar = false
 config.window_decorations = "RESIZE"
-config.window_background_opacity = 0.85
+config.window_background_opacity = 0.95
+config.macos_window_background_blur = 30
 config.colors = require("modules.colors")
 config.keys = require("modules.keys")(act)
 
