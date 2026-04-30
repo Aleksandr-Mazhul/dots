@@ -1,20 +1,5 @@
 #!/bin/bash
 
-CACHE_DIR="/tmp/sketchybar_icon_cache"
-CACHE_TTL=300  # 5 minutes
-
-# Ensure cache directory exists
-mkdir -p "$CACHE_DIR"
-
-# Check cache first
-if [ -f "$CACHE_DIR/$1" ]; then
-  CACHE_AGE=$(($(date +%s) - $(stat -f%m "$CACHE_DIR/$1" 2>/dev/null || echo 0)))
-  if [ $CACHE_AGE -lt $CACHE_TTL ]; then
-    cat "$CACHE_DIR/$1"
-    exit 0
-  fi
-fi
-
 function icon_map() {
   case "$1" in
   "Keynote" | "Keynote 讲演")
@@ -448,4 +433,4 @@ function icon_map() {
 
 icon_map "$1"
 
-echo "$icon_result" | tee "$CACHE_DIR/$1"
+echo "$icon_result"

@@ -1,43 +1,18 @@
-#!/bin/bash
+#!/bin/sh
 
-source "$CONFIG_DIR/colors.sh"
+# The $SELECTED variable is available for space components and indicates if
+# the space invoking this script (with name: $NAME) is currently selected:
+# https://felixkratz.github.io/SketchyBar/config/components#space----associate-mission-control-spaces-with-an-item
 
-WS="$1"
+source "$CONFIG_DIR/colors.sh" # Loads all defined colors
 
-FOCUSED="$(aerospace list-workspaces --focused)"
-
-WINDOWS="$(aerospace list-windows --workspace "$WS")"
-
-# если workspace пустой
-if [ -z "$WINDOWS" ]; then
-  sketchybar --set "$NAME" drawing=off
-  exit
-fi
-
-ICONS=""
-
-while IFS='|' read -r wid app rest
-do
-  app=$(echo "$app" | xargs)
-  icon="$($CONFIG_DIR/plugins/icon_map_fn.sh "$app")"
-  ICONS="$ICONS $icon"
-done <<< "$WINDOWS"
-
-if [ "$WS" = "$FOCUSED" ]; then
-  sketchybar --set "$NAME" \
-    drawing=on \
-    label="$ICONS" \
-    label.drawing=on \
-    background.drawing=on \
-    background.color=$ACCENT_COLOR \
-    icon.color=$BAR_COLOR \
-    label.color=$BAR_COLOR
+if [ $SELECTED = true ]; then
+  sketchybar --set $NAME background.drawing=on \
+                         background.color=$ACCENT_COLOR \
+                         label.color=$BAR_COLOR \
+                         icon.color=$BAR_COLOR
 else
-  sketchybar --set "$NAME" \
-    drawing=on \
-    label="$ICONS" \
-    label.drawing=on \
-    background.drawing=off \
-    icon.color=$ACCENT_COLOR \
-    label.color=$ACCENT_COLOR
+  sketchybar --set $NAME background.drawing=off \
+                         label.color=$ACCENT_COLOR \
+                         icon.color=$ACCENT_COLOR
 fi
