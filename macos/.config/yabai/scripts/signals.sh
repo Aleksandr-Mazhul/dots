@@ -17,6 +17,9 @@ yabai -m signal --add event=window_focused action="sketchybar --trigger window_f
 # Signal: Refresh when a window is created
 yabai -m signal --add event=window_created action="sketchybar --trigger window_focus 2>/dev/null || true" 2>/dev/null || true
 
+# Signal: Follow newly created managed window to its space
+yabai -m signal --add event=window_created action="yabai -m space --focus \$(yabai -m query --windows --window \$YABAI_WINDOW_ID | jq -r '.space'); yabai -m window \$YABAI_WINDOW_ID --focus" 2>/dev/null || true
+
 # Signal: Ensure new windows respect sublayer rules
 yabai -m signal --add event=window_created action="yabai -m window \$YABAI_WINDOW_ID --sub-layer normal" 2>/dev/null || true
 
