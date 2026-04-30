@@ -1,466 +1,362 @@
-# 🔧 macOS Dotfiles
+# 🔧 Dotfiles
 
-Чистый репозиторий конфигурационных файлов для macOS с поддержкой Linux.
+Чистый, модульный и полностью управляемый через **GNU Stow** репозиторий конфигурации окружения для **macOS** (с заделом под Linux).
 
-## 📦 Что входит
-
-- **Neovim** - конфигурация редактора (Lua, Lazy.nvim)
-- **tmux** - сессии терминала с кроссплатформенной поддержкой
-- **WezTerm** - современный терминал с красивой конфигурацией
-- **Zsh** - модульная оболочка (base, exports, aliases, functions, completion, plugins)
-- **Starship** - быстрый кастомный prompt
-- **Yazi** - файловый менеджер TUI
-- **Lazygit** - интерактивный git UI
-- **GitHub CLI** - конфигурация gh
-- **Homebrew** - список пакетов (Brewfile)
-- **Git** - основной и локальный конфиги
-- **Window Management:** yabai + skhd (tiling WM with keyboard automation)
-- **Window Focus:** Hammerspoon (intelligent app focus management)
-- **Window Decoration:** Borders (JankyBorders style borders)
-- **Прочее:** Kanata, Karabiner, Sketchybar
-
-## 🚀 Быстрый старт (с нуля)
-
-### 1. Клонировать репозиторий
-```bash
-cd ~
-git clone https://github.com/your-username/dotfiles.git
-cd dotfiles
-```
-
-### 2. Запустить bootstrap
-```bash
-bash scripts/bootstrap-macos.sh
-```
-
-Этот скрипт:
-- ✅ Установит GNU Stow (если нет)
-- ✅ Установит пакеты из Brewfile
-- ✅ Создаст symlinks для всех конфигов
-- ✅ Загрузит модули Zsh
-
-## ⚙️ macOS-специфичная настройка
-
-### Window Management: yabai + skhd + Hammerspoon
-
-После bootstrap скрипта, необходимо выполнить несколько дополнительных шагов:
-
-#### 1. Yabai - Scripting Addition
-```bash
-# Нагрузить scripting addition (требует password через sudo)
-sudo yabai --load-sa
-
-# Установить в Launch Agents (автозагрузка при старте)
-brew services start yabai
-```
-
-**Если yabai не управляет окнами:**
-- Проверьте System Settings → Privacy & Security → Accessibility (добавьте yabai)
-- SIP (System Integrity Protection) может блокировать. Проверьте:
-  ```bash
-  csrutil status
-  ```
-
-#### 2. skhd - Keyboard Daemon
-```bash
-# Установить в Launch Agents
-brew services start skhd
-
-# Проверить статус
-brew services list | grep skhd
-```
-
-**Горячие клавиши для управления:**
-- `alt + hjkl` - фокус на окнах
-- `alt + shift + hjkl` - переместить окно
-- `alt + 1-9` - переключение рабочих пространств
-- `alt + shift + 1-9` - переместить окно на рабочее пространство
-- `shift + cmd + r` - перезагрузить yabai + skhd
-
-**Reload скрипт:** `~/.config/yabai/scripts/reload.sh`
-
-#### 3. Hammerspoon - App Focus Management
-```bash
-# Hammerspoon должен быть установлен:
-brew install hammerspoon
-
-# Конфиг: ~/.hammerspoon/init.lua
-# Автоматически перенаправляет фокус на существующее окно приложения
-# при повторном открытии (например через Raycast, Dock, Spotlight)
-```
-
-**Требуется разрешение:**
-- System Settings → Privacy & Security → Accessibility (добавьте Hammerspoon)
-
-#### 4. Borders - Window Decoration
-```bash
-# Установлена и настроена в:
-~/.config/borders/bordersrc
-
-# Запуск:
-brew services start borders
-```
-
-### Управление конфигами через GNU Stow
-
-Все конфиги управляются через **GNU Stow** - сим линки создаются автоматически:
-
-```bash
-# Проверить что будет создано (dry-run):
-cd ~/dotfiles
-stow -n -v macos
-
-# Применить:
-stow -S macos
-
-# После изменения (пересоздать):
-stow -R macos
-
-# Удалить symlinks:
-stow -D macos
-```
-
-### Проверка Permissions и SIP
-
-macOS может блокировать некоторые функции yabai из-за SIP:
-
-```bash
-# Проверить SIP статус:
-csrutil status
-
-# Если "enabled", некоторые функции могут не работать
-# Отключить SIP (требует Recovery Mode):
-# 1. Перезагрузиться в Recovery Mode (Cmd + R при старте)
-# 2. Terminal → csrutil disable
-# 3. Перезагрузиться
-
-# После отключения SIP, перезагрузить scripting addition:
-sudo yabai --load-sa
-brew services restart yabai
-```
-
-## 🚀 Быстрый старт (с нуля)
-
-```
-dotfiles/
-├── common/                    # Общие конфиги (macOS + Linux)
-│   ├── .config/
-│   │   ├── nvim/              # Neovim (Lua, Lazy, LSP, Copilot)
-│   │   ├── wezterm/           # WezTerm с модулями colors/keys
-│   │   ├── yazi/              # Файловый менеджер
-│   │   ├── lazygit/           # Git UI
-│   │   ├── starship.toml       # Prompt
-│   │   ├── ghostty/           # Ghostty (опционально)
-│   │   ├── gh/                # GitHub CLI
-│   │   └── github-copilot/    # GitHub Copilot (в private/)
-│   ├── .zsh/                  # Модули Zsh (загружаются в .zshrc)
-│   │   ├── base.zsh           # Базовые опции
-│   │   ├── exports.zsh        # Переменные окружения
-│   │   ├── aliases.zsh        # Aliases (ll, lg, и т.д.)
-│   │   ├── functions.zsh      # Shell функции
-│   │   ├── completion.zsh     # Completion системы
-│   │   └── plugins.zsh        # Plugin менеджеры
-│   ├── .zshrc                 # Главный конфиг оболочки
-│   ├── .gitconfig             # Git конфиг (user.name, user.email)
-│   ├── .gitignore_global      # Глобальный .gitignore
-│   ├── .p10k.zsh              # Powerlevel10k prompt
-│   ├── .tmux.conf             # tmux конфиг
-│   ├── .ideavimrc             # IdeaVim (для JetBrains IDE)
-│   ├── .wezterm.lua           # Альтернативная загрузка WezTerm
-│   └── Brewfile               # Homebrew пакеты
-│
-├── macos/                     # macOS-специфичные конфиги
-│   ├── .config/
-│   │   ├── borders/           # Window borders (JankyBorders style)
-│   │   ├── kanata/            # Раскладка клавиатуры (Karabiner замена)
-│   │   ├── karabiner/         # Ремапирование клавиш
-│   │   ├── sketchybar/        # Статус бар (замена Menu Bar)
-│   │   ├── skhd/              # Keyboard hotkey daemon (yabai bindings)
-│   │   ├── yabai/             # Tiling window manager
-│   │   ├── tmux/              # macOS-специфичные tmux настройки
-│   │   └── wezterm/           # macOS override для WezTerm
-│   ├── .hammerspoon/          # Hammerspoon (app focus management)
-│   │   └── init.lua           # App watcher: intelligent focus on app switch
-│   ├── .zsh/
-│   │   └── macos.zsh          # macOS-специфичные переменные (ssh-agent, и т.д.)
-│   ├── .zprofile              # macOS login shell (PATH и т.д.)
-│   ├── .aerospace.toml        # Window manager AeroSpace
-│   ├── .gitconfig.local       # Локальные git настройки (НЕ коммитятся!)
-│   └── .macos                 # macOS startup скрипт
-│
-├── linux/                     # Linux-специфичные конфиги (skeleton)
-│   ├── .config/
-│   │   ├── wezterm/
-│   │   │   └── linux.lua       # Linux override для WezTerm
-│   │   └── tmux/
-│   │       └── linux.conf      # Linux-специфичные tmux настройки
-│   └── .zsh/
-│       └── linux.zsh          # Linux-специфичные переменные
-│
-├── hosts/
-│   └── macbook/               # Машина-специфичные конфиги (HOSTNAME-specific)
-│       ├── .config/
-│       └── .zsh/
-│           └── host.zsh       # Только для этой машины
-│
-├── private/                   # ❌ НЕ КОММИТЯТСЯ (в .gitignore)
-│   ├── .config/
-│   │   ├── github-copilot/    # GitHub OAuth токены
-│   │   │   ├── apps.json      # App credentials
-│   │   │   └── oauth.json     # OAuth tokens
-│   │   └── gh/
-│   │       └── hosts.yml      # GitHub hosts config
-│   └── .zsh.private           # Приватные экспорты (API ключи, и т.д.)
-│
-├── scripts/
-│   ├── bootstrap-macos.sh     # Полная установка для macOS (стартовый скрипт)
-│   ├── bootstrap-linux.sh     # Полная установка для Linux
-│   ├── install-stow.sh        # Установка GNU Stow (если нужен)
-│   └── sync.sh                # Синхронизация изменений (pull + restow)
-│
-├── .gitignore                 # Исключить private/, *.local, .env, и т.д.
-├── README.md                  # Этот файл
-└── LICENSE
-```
-
-## 🔧 Использование
-
-### Добавить новый конфиг
-
-Пример: добавить конфиг для Rust-tool
-
-1. **Скопировать конфиг в dotfiles**
-```bash
-# Если инструмент кроссплатформенный (общий):
-mkdir -p ~/dotfiles/common/.config/rust-tool
-cp -r ~/.config/rust-tool/* ~/dotfiles/common/.config/rust-tool/
-
-# Если macOS-специфичный:
-mkdir -p ~/dotfiles/macos/.config/rust-tool
-cp -r ~/.config/rust-tool/* ~/dotfiles/macos/.config/rust-tool/
-```
-
-2. **Удалить оригинал и создать symlink**
-```bash
-# Удалим оригинал (он теперь в dotfiles!)
-rm -rf ~/.config/rust-tool
-
-# Создадим symlink на dotfiles версию:
-ln -s ~/dotfiles/common/.config/rust-tool ~/.config/rust-tool
-# или для macOS:
-ln -s ~/dotfiles/macos/.config/rust-tool ~/.config/rust-tool
-```
-
-3. **Добавить в git и коммитить**
-```bash
-cd ~/dotfiles
-git add -A
-git commit -m "Add rust-tool config"
-git push
-```
-
-### Обновить конфиги (sync)
-
-После изменения конфига:
-```bash
-cd ~/dotfiles
-bash scripts/sync.sh
-```
-
-Этот скрипт:
-- 🔄 Стягивает последние изменения (git pull)
-- 🔗 Пересоздаёт symlinks (stow -R)
-
-### Откатить если что-то сломалось
-
-```bash
-# Восстановить backup
-cp -R ~/dotfiles.backup-20260429-033411/* ~/dotfiles/
-
-# Или просто переустановить symlinks:
-cd ~/dotfiles
-bash scripts/bootstrap-macos.sh
-```
-
-## 🔐 Секреты и Приватные Конфиги
-
-**НИКОГДА не коммитьте токены, пароли, credentials!**
-
-Используйте `private/` для всего, что содержит:
-- 🔑 API ключи
-- 🔐 OAuth tokens
-- 🛡️ SSH ключи
-- 💳 Credentials
-
-**private/** папка автоматически исключена в .gitignore.
-
-Пример (.zsh.private):
-```bash
-# private/.zsh.private
-export GITHUB_TOKEN="ghp_..."
-export AWS_SECRET_ACCESS_KEY="..."
-```
-
-Загружайте в .zshrc:
-```bash
-# .zshrc
-[ -f ~/.zsh.private ] && source ~/.zsh.private
-```
-
-## 🖥️ Добавить новую машину (Linux или другую macOS)
-
-### Новый хост (машина-специфичные конфиги):
-```bash
-cd ~/dotfiles
-mkdir -p hosts/laptop-name/.config
-mkdir -p hosts/laptop-name/.zsh
-
-# Добавить машина-специфичные конфиги
-echo "export HOSTNAME_SPECIFIC_VAR=value" > hosts/laptop-name/.zsh/host.zsh
-```
-
-### Новая платформа (Linux):
-
-1. Обновить **linux/.zsh/** с Linux-специфичными переменными
-2. Обновить **linux/.config/** с Linux конфигами (если нужны)
-3. Запустить bootstrap-linux.sh:
-```bash
-bash scripts/bootstrap-linux.sh
-```
-
-## 📜 Что делают скрипты?
-
-### 1. `bootstrap-macos.sh`
-**Полная установка для macOS с нуля**
-
-Что делает:
-```
-1. Проверяет GNU Stow (устанавливает если нет)
-2. Устанавливает Homebrew пакеты (из Brewfile)
-3. Создаёт symlinks для всех конфигов:
-   - common/
-   - macos/
-   - hosts/macbook/
-4. Выводит итоговое сообщение
-```
-
-Когда использовать: **Первая установка на новой машине**
-
-### 2. `bootstrap-linux.sh`
-**Полная установка для Linux**
-
-Похож на macos.sh, но:
-- Не использует brew (вместо этого apt/yum/pacman)
-- Стоует `common` + `linux` (не macos)
-
-### 3. `install-stow.sh`
-**Установка GNU Stow (вспомогательный)**
-
-Что делает:
-```
-1. Проверяет есть ли stow в PATH
-2. Если нет - устанавливает:
-   - На macOS: через brew
-   - На Linux: через apt/yum/pacman
-```
-
-Используется: Вызывается из bootstrap скриптов
-
-### 4. `sync.sh`
-**Синхронизация изменений из GitHub**
-
-Что делает:
-```
-1. Стягивает последние изменения: git pull --rebase
-2. Пересоздаёт symlinks: stow -R
-3. Обновляет всё до актуального состояния
-```
-
-Когда использовать: **После git pull или если symlinks сломались**
-
-## 🔄 Workflow: Как это работает?
-
-### Установка:
-```bash
-cd ~
-git clone https://github.com/your-username/dotfiles.git
-cd dotfiles
-bash scripts/bootstrap-macos.sh
-# Теперь ~/.config/nvim → ~/dotfiles/common/.config/nvim
-# И все остальные конфиги подключены!
-```
-
-### День в день:
-```bash
-# Редактируете конфиг (например nvim):
-vim ~/.config/nvim/init.lua
-
-# На самом деле редактируете:
-# ~/dotfiles/common/.config/nvim/init.lua (через symlink!)
-
-# Коммитите изменения:
-cd ~/dotfiles
-git add .
-git commit -m "Update nvim config"
-git push
-```
-
-### Синхронизация на другой машине:
-```bash
-cd ~/dotfiles
-git pull
-bash scripts/sync.sh
-# Все конфиги обновлены!
-```
-
-### Откат:
-```bash
-# Если что-то сломалось:
-cd ~/dotfiles
-git revert <commit-hash>
-bash scripts/sync.sh
-```
-
-## 🛠️ Требования
-
-- macOS 13+ (для bootstrap-macos.sh)
-- Linux Ubuntu 20+, Debian, Fedora, Arch (для bootstrap-linux.sh)
-- Zsh (не bash, так как используются zsh-специфичные функции)
-- Git
-- Homebrew (только для macOS)
-
-## 📝 Примечания
-
-- Все конфиги хранятся в git как **реальные файлы**
-- Symlinks создаются автоматически в ~/ и ~/.config/
-- `private/` папка **НЕ коммитится** (в .gitignore)
-- Можно безопасно делать `git clone`, `bootstrap`, и ничего не поломается
-
-## 🔗 GNU Stow
-
-Этот репозиторий использует GNU Stow для управления symlinks.
-
-**Что это?** Stow - утилита которая:
-- Берёт файлы из подпапок (common, macos, linux)
-- Создаёт symlinks в родительской папке (~/)
-
-**Зачем?** Чтобы не копировать файлы, а ссылаться на них в git
-
-Пример:
-```
-Структура в git:
-dotfiles/common/.zshrc
-
-После stow:
-~/.zshrc → ~/dotfiles/common/.zshrc (symlink)
-```
-
-## 📄 Лицензия
-
-MIT
+Подход: **single source of truth** — все реальные конфиги лежат в git, а в `$HOME` создаются symlink через Stow.
 
 ---
 
-**Вопросы?** Смотри файл плана или создавай issues в GitHub!
+## ✨ Что внутри
 
-Удачи с конфигурацией! 🚀
+### Core CLI
+- **Zsh** — модульная shell-конфигурация
+- **Starship** — prompt
+- **Git** — global config + ignores
+- **tmux** — terminal multiplexer
+- **Yazi** — TUI file manager
+- **Lazygit** — Git UI
+- **GitHub CLI** — `gh`
+- **Homebrew** — package management
+
+### Editor / Terminal
+- **Neovim** — Lua + Lazy.nvim + LSP stack
+- **WezTerm** — terminal config
+- **Ghostty** — optional terminal config
+
+### macOS WM stack
+- **yabai** — tiling window manager
+- **skhd** — hotkey daemon
+- **Sketchybar** — status bar
+- **Borders** — focused window borders
+- **Karabiner / Kanata** — keyboard remapping
+
+### Optional
+- **Hammerspoon** — utility automation
+- **AeroSpace config** — legacy / experimental
+
+---
+
+# 📦 Repository structure
+
+```text
+dotfiles/
+├── common/                        # Cross-platform configs
+│   ├── .config/
+│   │   ├── gh/
+│   │   ├── github-copilot/
+│   │   ├── lazygit/
+│   │   ├── nvim/
+│   │   ├── starship.toml
+│   │   ├── wezterm/
+│   │   ├── yazi/
+│   │   └── ghostty/              # optional
+│   │
+│   ├── .zsh/
+│   │   ├── aliases.zsh
+│   │   ├── base.zsh
+│   │   ├── completion.zsh
+│   │   ├── exports.zsh
+│   │   ├── functions.zsh
+│   │   └── plugins.zsh
+│   │
+│   ├── .editorconfig
+│   ├── .gitconfig
+│   ├── .gitignore_global
+│   ├── .tmux.conf
+│   ├── .wezterm.lua
+│   ├── .zshrc
+│   └── Brewfile
+│
+├── macos/                         # macOS-only layer
+│   ├── .config/
+│   │   ├── borders/
+│   │   ├── kanata/
+│   │   ├── karabiner/
+│   │   ├── sketchybar/
+│   │   ├── skhd/
+│   │   ├── tmux/
+│   │   ├── wezterm/
+│   │   └── yabai/
+│   │
+│   ├── .hammerspoon/             # optional
+│   │   └── init.lua
+│   │
+│   ├── .zsh/
+│   │   └── macos.zsh
+│   │
+│   ├── Library/
+│   │   └── LaunchAgents/
+│   │       ├── com.asmvik.yabai.plist
+│   │       └── com.koekeishiya.skhd.plist
+│   │
+│   ├── .aerospace.toml           # legacy / experimental
+│   ├── .macos
+│   └── .zprofile
+│
+├── hosts/                         # Machine-specific overrides
+│   └── macbook/
+│       ├── .config/
+│       └── .zsh/
+│           └── host.zsh
+│
+├── linux/                         # Future Linux layer
+│   ├── .config/
+│   └── .zsh/
+│
+├── private/                       # ignored by git
+│   ├── .config/
+│   └── .zsh.private
+│
+├── scripts/
+│   ├── bootstrap-macos.sh
+│   ├── bootstrap-linux.sh
+│   ├── install-stow.sh
+│   └── sync.sh
+│
+├── .gitignore
+├── LICENSE
+└── README.md
+```
+
+---
+
+# 🔗 GNU Stow architecture
+
+Репозиторий управляется через **GNU Stow**.
+
+Это значит:
+
+- в git лежат **реальные файлы**
+- в `$HOME` лежат **symlink**
+- никаких копий конфигов
+- никаких ручных `ln -s`
+
+Пример:
+
+```text
+~/.zshrc
+  → ~/dotfiles/common/.zshrc
+
+~/.config/yabai
+  → ~/dotfiles/macos/.config/yabai
+
+~/Library/LaunchAgents/com.asmvik.yabai.plist
+  → ~/dotfiles/macos/Library/LaunchAgents/com.asmvik.yabai.plist
+```
+
+---
+
+# 🚀 Quick start
+
+## Clone repo
+
+```bash
+cd ~
+git clone <your-repo-url> dotfiles
+cd dotfiles
+```
+
+## Install GNU Stow
+
+macOS:
+
+```bash
+brew install stow
+```
+
+Linux:
+
+```bash
+sudo apt install stow
+```
+
+---
+
+## Apply config
+
+```bash
+cd ~/dotfiles
+
+stow common
+stow macos
+stow -d hosts -t ~ macbook
+```
+
+После этого конфиги подключены.
+
+---
+
+# 🖥 Window manager stack
+
+Основной WM stack:
+
+```text
+yabai
++ skhd
++ sketchybar
++ borders
+```
+
+---
+
+## Start services
+
+### yabai
+
+```bash
+launchctl bootstrap gui/$(id -u) \
+  ~/Library/LaunchAgents/com.asmvik.yabai.plist
+```
+
+reload:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/com.asmvik.yabai
+```
+
+---
+
+### skhd
+
+```bash
+launchctl bootstrap gui/$(id -u) \
+  ~/Library/LaunchAgents/com.koekeishiya.skhd.plist
+```
+
+reload:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/com.koekeishiya.skhd
+```
+
+---
+
+### Sketchybar
+
+```bash
+brew services start sketchybar
+```
+
+reload:
+
+```bash
+brew services restart sketchybar
+```
+
+---
+
+## Permissions
+
+macOS → Privacy & Security:
+
+Enable:
+
+- Accessibility
+- Automation
+- Screen Recording (if needed)
+
+for:
+
+- yabai
+- skhd
+- Sketchybar
+- Hammerspoon (optional)
+
+---
+
+# ➕ Add new config
+
+Example:
+
+```bash
+mkdir -p common/.config/foo
+cp -R ~/.config/foo/* common/.config/foo/
+```
+
+Apply:
+
+```bash
+stow -R common
+```
+
+Done.
+
+---
+
+# 🔄 Update workflow
+
+Edit:
+
+```bash
+vim ~/.config/yabai/yabairc
+```
+
+Commit:
+
+```bash
+cd ~/dotfiles
+git add -A
+git commit -m "update yabai config"
+git push
+```
+
+Sync on another machine:
+
+```bash
+cd ~/dotfiles
+git pull --rebase
+
+stow -R common
+stow -R macos
+stow -R -d hosts -t ~ macbook
+```
+
+---
+
+# 🔐 Private files
+
+Never commit:
+
+- tokens
+- secrets
+- ssh keys
+- credentials
+
+Use:
+
+```text
+private/
+```
+
+Examples:
+
+```text
+private/.zsh.private
+private/.config/gh/
+private/.config/github-copilot/
+```
+
+---
+
+# 🧪 Dry run check
+
+Проверка, что структура чистая:
+
+```bash
+stow -n -v common
+stow -n -v macos
+stow -n -v -d hosts -t ~ macbook
+```
+
+Если нет conflict/error → всё корректно.
+
+---
+
+# 📝 Notes
+
+- **yabai + skhd** — основной WM
+- **Hammerspoon** — optional helper
+- **AeroSpace config** — legacy / experimental
+- **GNU Stow** — единственный source of truth
+
+---
