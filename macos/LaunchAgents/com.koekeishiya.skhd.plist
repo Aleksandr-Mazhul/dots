@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.koekeishiya.skhd</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/skhd</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/alexandermazhul/bin:/Users/alexandermazhul/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:/opt/homebrew/opt/fzf/bin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <dict>
+    <key>Crashed</key>
+    <true/>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+
+  <key>ProcessType</key>
+  <string>Interactive</string>
+
+  <key>Nice</key>
+  <integer>-20</integer>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/skhd_alexandermazhul.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/skhd_alexandermazhul.err.log</string>
+</dict>
+</plist>
