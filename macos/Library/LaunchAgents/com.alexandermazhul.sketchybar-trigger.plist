@@ -9,7 +9,7 @@
   <array>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>sleep 8; /opt/homebrew/bin/sketchybar --reload; sleep 2; /opt/homebrew/bin/sketchybar --trigger space_windows_change</string>
+    <string>sleep 3; /opt/homebrew/bin/sketchybar --reload; sleep 1; /opt/homebrew/bin/sketchybar --trigger space_windows_change</string>
   </array>
 
   <key>RunAtLoad</key>
