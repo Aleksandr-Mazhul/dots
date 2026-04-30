@@ -15,6 +15,7 @@ declare -A APP_WORKSPACE=(
   ["WezTerm"]="Z"
   ["Google Chrome"]="V"
   ["Brave Browser"]="V"
+  ["Arc"]="V"
   ["Safari"]="V"
   ["Finder"]="E"
   ["Telegram"]="T"
