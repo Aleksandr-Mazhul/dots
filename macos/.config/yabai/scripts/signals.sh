@@ -21,7 +21,6 @@ yabai -m signal --add event=window_created action="sketchybar --trigger window_f
 yabai -m signal --add event=window_created action="yabai -m space --focus \$(yabai -m query --windows --window \$YABAI_WINDOW_ID | jq -r '.space'); yabai -m window \$YABAI_WINDOW_ID --focus" 2>/dev/null || true
 
 # Signal: Ensure new windows respect sublayer rules
-yabai -m signal --add event=window_created action="yabai -m window \$YABAI_WINDOW_ID --sub-layer normal" 2>/dev/null || true
 
 # Signal: Handle Mission Control enter (restore full opacity)
 yabai -m signal --add event=mission_control_enter action="yabai -m config normal_window_opacity 1.0" 2>/dev/null || true

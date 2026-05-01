@@ -58,36 +58,31 @@ apply_workspace_rules() {
 
 # Apply unmanaged app rules (manage=off)
 apply_unmanaged_rules() {
-  yabai -m rule --add app="^System Preferences$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^System Settings$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^1Password$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Raycast$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Alfred$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Bezel$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Windscribe$" manage=off sticky=off layer=above 2>/dev/null || true
-  yabai -m rule --add app="^Bartender$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Activity Monitor$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Directory Utility$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^App Store$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Preview$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Calculator$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Image Capture$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Audio MIDI Setup$" manage=off sticky=off layer=normal 2>/dev/null || true
-  yabai -m rule --add app="^Migration Assistant$" manage=off sticky=off layer=normal 2>/dev/null || true
+  yabai -m rule --add app="^System Preferences$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^System Settings$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^1Password$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Raycast$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Alfred$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Bezel$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Windscribe$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Bartender$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Activity Monitor$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Directory Utility$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^App Store$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Preview$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Calculator$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Image Capture$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Audio MIDI Setup$" manage=off sticky=off 2>/dev/null || true
+  yabai -m rule --add app="^Migration Assistant$" manage=off sticky=off 2>/dev/null || true
 }
 
 
 # Apply Windscribe special rules
 apply_windscribe_rules() {
-  yabai -m rule --add app="^Windscribe$" manage=off sticky=off layer=above 2>/dev/null || true
+  yabai -m rule --add app="^Windscribe$" manage=off sticky=off 2>/dev/null || true
 }
 
 # Apply general rules for all managed windows
-apply_general_rules() {
-  # All windows start on normal sublayer
-  yabai -m rule --add app=".*" sub-layer=normal 2>/dev/null || true
-}
-
 # Float transient dialogs / modal windows
 apply_dialog_rules() {
   yabai -m rule --add title="^(Open|Save|Save As|Export|Import|Preferences|Settings)$" manage=off 2>/dev/null || true
@@ -97,7 +92,6 @@ apply_dialog_rules() {
 }
 
 # Main execution
-apply_general_rules
 apply_unmanaged_rules
 apply_windscribe_rules
 apply_dialog_rules
