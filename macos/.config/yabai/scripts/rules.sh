@@ -4,7 +4,11 @@ set -e
 
 yabai -m rule --remove 2>/dev/null || true
 
-# App -> workspace
+# =============================================================================
+# Constants
+# =============================================================================
+
+# App -> workspace mapping
 declare -A APP_WORKSPACE=(
   ["WebStorm"]="W"
   ["CLion"]="C"
@@ -25,7 +29,7 @@ declare -A APP_WORKSPACE=(
   ["ChatGPT"]="X"
 )
 
-# Unmanaged apps
+# Apps unmanaged by yabai
 declare -a APPS_UNMANAGED=(
   "System Preferences"
   "System Settings"
@@ -44,6 +48,95 @@ declare -a APPS_UNMANAGED=(
   "Audio MIDI Setup"
   "Migration Assistant"
 )
+
+# JetBrains family
+JETBRAINS_APPS='^(CLion|WebStorm|IntelliJ IDEA|PyCharm|GoLand|Rider|RubyMine|PhpStorm|DataGrip|DataSpell|AppCode|RustRover|Aqua|JetBrains Toolbox)$'
+
+# JetBrains windows that should float
+declare -a JETBRAINS_FLOAT_PATTERNS=(
+  # basic actions
+  '^Rename$'
+  '^Delete$'
+  '^Move$'
+  '^Copy$'
+  '^Find.*'
+  '^Replace.*'
+  '^Commit.*'
+
+  # settings / config
+  '^Settings$'
+  '^Keyboard Shortcut$'
+  '^Preferences$'
+  '^Project Structure$'
+  '^Plugins$'
+  '^Terminal$'
+  '^Keymap$'
+  '^Appearance$'
+  '^Color Scheme$'
+  '^Code Style.*'
+  '^Inspection.*'
+  '^Scopes$'
+  '^Templates.*'
+  '^Live Templates.*'
+  '^File Types$'
+  '^Plugins.*'
+  '^SDKs$'
+  '^Project SDK.*'
+
+  # plugin / update / notification / errors
+  '.*Plugin.*'
+  '.*Update.*'
+  '^IDE .*'
+  '.*Error.*'
+  '.*Warning.*'
+  '^Notifications$'
+
+  # create / open / import
+  '^New .*'
+  '^Open .*'
+  '^Create .*'
+  '^Select .*'
+  '^Choose .*'
+  '^Attach .*'
+  '^Register .*'
+  '^Import .*'
+  '^Export .*'
+  '^Invalidate .*'
+
+  # refactor / run / debug
+  '^Refactor.*'
+  '^Safe Delete.*'
+  '^Run.*'
+  '^Debug.*'
+  '^Edit .*'
+
+  # code generation
+  '^Generate.*'
+  '^Override.*'
+  '^Implement.*'
+
+  # extended file ops
+  '^Rename .*'
+  '^Move .*'
+  '^Copy .*'
+  '^Delete .*'
+
+  # git
+  '^Git .*'
+  '^Merge.*'
+  '^Rebase.*'
+  '^Cherry-Pick.*'
+  '^Push.*'
+  '^Pull.*'
+
+  # navigation
+  '^Search Everywhere$'
+  '^Go to .*'
+)
+
+# =============================================================================
+# Rules
+# =============================================================================
 
 apply_workspace_rules() {
   for app in "${!APP_WORKSPACE[@]}"; do
@@ -70,86 +163,17 @@ apply_dialog_rules() {
 }
 
 apply_jetbrains_rules() {
-  local jetbrains_apps='^(CLion|WebStorm|IntelliJ IDEA|PyCharm|GoLand|Rider|RubyMine|PhpStorm|DataGrip|DataSpell|AppCode|RustRover|Aqua|JetBrains Toolbox)$'
-
-  local patterns=(
-    '^Rename$'
-    '^Delete$'
-    '^Move$'
-    '^Copy$'
-    '^Find.*'
-    '^Replace.*'
-    '^Commit.*'
-    '^Settings$'
-    '^Keyboard Shortcut$'
-    '^Preferences$'
-    '^Project Structure$'
-    '^Plugins$'
-    '.*Plugin.*'
-    '.*Update.*'
-    '^IDE .*'
-    '.*Error.*'
-    '.*Warning.*'
-    '^Notifications$'
-    '^Terminal$'
-    '^Keymap$'
-    '^Appearance$'
-    '^Color Scheme$'
-
-    '^New .*'
-    '^Open .*'
-    '^Create .*'
-    '^Select .*'
-    '^Choose .*'
-    '^Attach .*'
-    '^Register .*'
-    '^Import .*'
-    '^Export .*'
-    '^Invalidate .*'
-
-    '^Refactor.*'
-    '^Safe Delete.*'
-    '^Run.*'
-    '^Debug.*'
-    '^Edit .*'
-
-    '^Generate.*'
-    '^Override.*'
-    '^Implement.*'
-
-    '^Rename .*'
-    '^Move .*'
-    '^Copy .*'
-    '^Delete .*'
-
-    '^Git .*'
-    '^Merge.*'
-    '^Rebase.*'
-    '^Cherry-Pick.*'
-    '^Push.*'
-    '^Pull.*'
-
-    '^Search Everywhere$'
-    '^Go to .*'
-
-    '^Code Style.*'
-    '^Inspection.*'
-    '^Scopes$'
-    '^Templates.*'
-    '^Live Templates.*'
-    '^File Types$'
-    '^Plugins.*'
-    '^SDKs$'
-    '^Project SDK.*'
-  )
-
-  for pattern in "${patterns[@]}"; do
+  for pattern in "${JETBRAINS_FLOAT_PATTERNS[@]}"; do
     yabai -m rule --add \
-      app="$jetbrains_apps" \
+      app="$JETBRAINS_APPS" \
       title="$pattern" \
       manage=off 2>/dev/null || true
   done
 }
+
+# =============================================================================
+# Main
+# =============================================================================
 
 apply_unmanaged_rules
 apply_dialog_rules
