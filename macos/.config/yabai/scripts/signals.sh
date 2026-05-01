@@ -18,7 +18,19 @@ yabai -m signal --add event=window_focused action="sketchybar --trigger window_f
 yabai -m signal --add event=window_created action="sketchybar --trigger window_focus 2>/dev/null || true" 2>/dev/null || true
 
 # Signal: Follow newly created managed window to its space
-yabai -m signal --add event=window_created action="yabai -m space --focus \$(yabai -m query --windows --window \$YABAI_WINDOW_ID | jq -r '.space'); yabai -m window \$YABAI_WINDOW_ID --focus" 2>/dev/null || true
+yabai -m signal --add event=window_created action='
+WINDOW_JSON=$(yabai -m query --windows --window "$YABAI_WINDOW_ID" 2>/dev/null) || exit 0
+
+FLOATING=$(echo "$WINDOW_JSON" | jq -r ".\"is-floating\"")
+ROLE=$(echo "$WINDOW_JSON" | jq -r ".role")
+SUBROLE=$(echo "$WINDOW_JSON" | jq -r ".subrole")
+SPACE=$(echo "$WINDOW_JSON" | jq -r ".space")
+
+if [[ "$FLOATING" == "false" && "$ROLE" == "AXWindow" && "$SUBROLE" == "AXStandardWindow" ]]; then
+  yabai -m space --focus "$SPACE"
+  yabai -m window "$YABAI_WINDOW_ID" --focus
+fi
+' 2>/dev/null || true
 
 # Signal: Ensure new windows respect sublayer rules
 

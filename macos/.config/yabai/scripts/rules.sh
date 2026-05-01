@@ -73,83 +73,45 @@ apply_dialog_rules() {
 }
 
 # Apply JetBrains dialog float rules
+# Apply JetBrains dialog float rules
 apply_jetbrains_rules() {
   local jetbrains_apps='^(CLion|WebStorm|IntelliJ IDEA|PyCharm|GoLand|Rider|RubyMine|PhpStorm|DataGrip|DataSpell|AppCode|RustRover|Aqua|JetBrains Toolbox)$'
 
-  local patterns=(
-    '^Rename$'
-    '^Delete$'
-    '^Move$'
-    '^Copy$'
-    '^Find.*'
-    '^Replace.*'
-    '^Commit.*'
-    '^Settings$'
-    '^Preferences$'
-    '^Project Structure$'
-    '^Plugins$'
-    '^Terminal$'
-    '^Keymap$'
-    '^Appearance$'
-    '^Color Scheme$'
-
-    '^New .*'
-    '^Open .*'
-    '^Create .*'
-    '^Select .*'
-    '^Choose .*'
-    '^Attach .*'
-    '^Register .*'
-    '^Import .*'
-    '^Export .*'
-    '^Invalidate .*'
-
-    '^Refactor.*'
-    '^Safe Delete.*'
-    '^Run.*'
-    '^Debug.*'
-    '^Edit .*'
-
-    '^Generate.*'
-    '^Override.*'
-    '^Implement.*'
-
-    '^Rename .*'
-    '^Move .*'
-    '^Copy .*'
-    '^Delete .*'
-
-    '^Git .*'
-    '^Merge.*'
-    '^Rebase.*'
-    '^Cherry-Pick.*'
-    '^Push.*'
-    '^Pull.*'
-    '^Commit.*'
-
-    '^Search Everywhere$'
-    '^Go to .*'
-
-    '^Code Style.*'
-    '^Inspection.*'
-    '^Scopes$'
-    '^Templates.*'
-    '^Live Templates.*'
-    '^File Types$'
-    '^Plugins.*'
-    '^SDKs$'
-    '^Project SDK.*'
+  local dialogs=(
+    Rename
+    Delete
+    Move
+    Copy
+    Find
+    "Find in Files"
+    Replace
+    "Replace in Files"
+    Commit
+    Settings
+    Preferences
+    "Project Structure"
+    Plugins
+    "Run/Debug Configurations"
+    "Edit Configurations"
+    "Safe Delete"
+    Refactor
+    "Refactor This"
+    "New File"
+    "New Directory"
+    "New Scratch File"
+    "Open Project"
+    "Select Path"
+    "Attach Directory"
+    "Invalidate Caches"
+    Terminal
+    Keymap
+    Appearance
+    "Color Scheme"
+    "New C++ Class"
   )
-
-  for pattern in "${patterns[@]}"; do
-    yabai -m rule --add \
-      app="$jetbrains_apps" \
-      title="$pattern" \
-      manage=off 2>/dev/null || true
-  done
 }
 
-# Main execution
+#Main execution
 apply_unmanaged_rules
 apply_dialog_rules
 apply_jetbrains_rules
