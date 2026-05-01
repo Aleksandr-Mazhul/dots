@@ -300,7 +300,7 @@ function icon_map() {
     icon_result=":pdf:"
     ;;
   "PyCharm")
-    icon_result=":pycharm:"
+    icon_result="󰌠"
     ;;
   "Audacity")
     icon_result=":audacity:"
@@ -424,6 +424,27 @@ function icon_map() {
     ;;
   "WhatsApp")
     icon_result=":whats_app:"
+    ;;
+  "ChatGPT")
+    icon_result="󰚩"
+    ;;
+  "CLion")
+    icon_result="󰙱"
+    ;;
+  "IntelliJ IDEA")
+    icon_result=""
+    ;;
+  "WebStorm")
+    icon_result=""
+    ;;
+  "RustRover")
+    icon_result=""
+    ;;
+  "Cursor")
+    icon_result=""
+    ;;
+  "Yandex")
+    icon_result="󰇧"
     ;;
   *)
     icon_result=":default:"

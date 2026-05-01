@@ -58,27 +58,9 @@ apply_workspace_rules() {
 
 # Apply unmanaged app rules (manage=off)
 apply_unmanaged_rules() {
-  yabai -m rule --add app="^System Preferences$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^System Settings$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^1Password$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Raycast$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Alfred$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Bezel$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Windscribe$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Bartender$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Activity Monitor$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Directory Utility$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^App Store$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Preview$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Calculator$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Image Capture$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Audio MIDI Setup$" manage=off sticky=off 2>/dev/null || true
-  yabai -m rule --add app="^Migration Assistant$" manage=off sticky=off 2>/dev/null || true
-}
-
-# Apply Windscribe special rules
-apply_windscribe_rules() {
-  yabai -m rule --add app="^Windscribe$" manage=off sticky=off 2>/dev/null || true
+  for app in "${APPS_UNMANAGED[@]}"; do
+    yabai -m rule --add app="^${app}$" manage=off sticky=off 2>/dev/null || true
+  done
 }
 
 # Apply general rules for all managed windows
@@ -94,49 +76,81 @@ apply_dialog_rules() {
 apply_jetbrains_rules() {
   local jetbrains_apps='^(CLion|WebStorm|IntelliJ IDEA|PyCharm|GoLand|Rider|RubyMine|PhpStorm|DataGrip|DataSpell|AppCode|RustRover|Aqua|JetBrains Toolbox)$'
 
-  local dialogs=(
-    Rename
-    Delete
-    Move
-    Copy
-    Find
-    "Find in Files"
-    Replace
-    "Replace in Files"
-    Commit
-    Settings
-    Preferences
-    "Project Structure"
-    Plugins
-    "Run/Debug Configurations"
-    "Edit Configurations"
-    "Safe Delete"
-    Refactor
-    "Refactor This"
-    "New File"
-    "New Directory"
-    "New Scratch File"
-    "Open Project"
-    "Select Path"
-    "Attach Directory"
-    "Invalidate Caches"
-    Terminal
-    Keymap
-    Appearance
-    "Color Scheme"
+  local patterns=(
+    '^Rename$'
+    '^Delete$'
+    '^Move$'
+    '^Copy$'
+    '^Find.*'
+    '^Replace.*'
+    '^Commit.*'
+    '^Settings$'
+    '^Preferences$'
+    '^Project Structure$'
+    '^Plugins$'
+    '^Terminal$'
+    '^Keymap$'
+    '^Appearance$'
+    '^Color Scheme$'
+
+    '^New .*'
+    '^Open .*'
+    '^Create .*'
+    '^Select .*'
+    '^Choose .*'
+    '^Attach .*'
+    '^Register .*'
+    '^Import .*'
+    '^Export .*'
+    '^Invalidate .*'
+
+    '^Refactor.*'
+    '^Safe Delete.*'
+    '^Run.*'
+    '^Debug.*'
+    '^Edit .*'
+
+    '^Generate.*'
+    '^Override.*'
+    '^Implement.*'
+
+    '^Rename .*'
+    '^Move .*'
+    '^Copy .*'
+    '^Delete .*'
+
+    '^Git .*'
+    '^Merge.*'
+    '^Rebase.*'
+    '^Cherry-Pick.*'
+    '^Push.*'
+    '^Pull.*'
+    '^Commit.*'
+
+    '^Search Everywhere$'
+    '^Go to .*'
+
+    '^Code Style.*'
+    '^Inspection.*'
+    '^Scopes$'
+    '^Templates.*'
+    '^Live Templates.*'
+    '^File Types$'
+    '^Plugins.*'
+    '^SDKs$'
+    '^Project SDK.*'
   )
 
-  for title in "${dialogs[@]}"; do
+  for pattern in "${patterns[@]}"; do
     yabai -m rule --add \
       app="$jetbrains_apps" \
-      title="^${title}$" \
+      title="$pattern" \
       manage=off 2>/dev/null || true
   done
 }
 
 # Main execution
 apply_unmanaged_rules
-apply_windscribe_rules
 apply_dialog_rules
 apply_jetbrains_rules
 apply_workspace_rules
