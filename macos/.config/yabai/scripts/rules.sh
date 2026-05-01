@@ -76,7 +76,6 @@ apply_unmanaged_rules() {
   yabai -m rule --add app="^Migration Assistant$" manage=off sticky=off 2>/dev/null || true
 }
 
-
 # Apply Windscribe special rules
 apply_windscribe_rules() {
   yabai -m rule --add app="^Windscribe$" manage=off sticky=off 2>/dev/null || true
@@ -91,10 +90,55 @@ apply_dialog_rules() {
   yabai -m rule --add title=".*(Authentication|Login|Sign In).*" manage=off 2>/dev/null || true
 }
 
+# Apply JetBrains dialog float rules
+apply_jetbrains_rules() {
+  local jetbrains_apps='^(CLion|WebStorm|IntelliJ IDEA|PyCharm|GoLand|Rider|RubyMine|PhpStorm|DataGrip|DataSpell|AppCode|RustRover|Aqua|JetBrains Toolbox)$'
+
+  local dialogs=(
+    Rename
+    Delete
+    Move
+    Copy
+    Find
+    "Find in Files"
+    Replace
+    "Replace in Files"
+    Commit
+    Settings
+    Preferences
+    "Project Structure"
+    Plugins
+    "Run/Debug Configurations"
+    "Edit Configurations"
+    "Safe Delete"
+    Refactor
+    "Refactor This"
+    "New File"
+    "New Directory"
+    "New Scratch File"
+    "Open Project"
+    "Select Path"
+    "Attach Directory"
+    "Invalidate Caches"
+    Terminal
+    Keymap
+    Appearance
+    "Color Scheme"
+  )
+
+  for title in "${dialogs[@]}"; do
+    yabai -m rule --add \
+      app="$jetbrains_apps" \
+      title="^${title}$" \
+      manage=off 2>/dev/null || true
+  done
+}
+
 # Main execution
 apply_unmanaged_rules
 apply_windscribe_rules
 apply_dialog_rules
+apply_jetbrains_rules
 apply_workspace_rules
 
 exit 0
