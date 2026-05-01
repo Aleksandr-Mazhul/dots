@@ -1,4 +1,3 @@
-*.local
 .env
 private/
 .DS_Store

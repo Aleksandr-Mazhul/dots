@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="${CPP_WORKSPACE:-$HOME/CLionProjects/mazhul-cpp-development}"
+SCAN_ROOT="$ROOT/cpp-semester-2"
+ROOT_CMAKE="$ROOT/CMakeLists.txt"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
+CACHE_FILE="$CACHE_DIR/cmake-sync.snapshot"
+
+mkdir -p "$CACHE_DIR"
+
+sanitize() {
+	local out
+
+	out="$(
+		printf '%s' "$1" |
+			tr '[:upper:]' '[:lower:]' |
+			sed 's/[^a-z0-9]/_/g' |
+			sed 's/_\+/_/g' |
+			sed 's/^_//; s/_$//'
+	)"
+
+	[[ -z "$out" ]] && out="app"
+	printf '%s\n' "$out"
+}
+
+target_name() {
+	local dir="$1"
+	local rel="${dir#$ROOT/}"
+	sanitize "$rel"
+}
+
+quote_cmake() {
+	printf '"%s"' "${1//\"/\\\"}"
+}
+
+project_roots() {
+	walk() {
+		local dir="$1"
+
+		if find "$dir" -maxdepth 1 -type f -name "*.cpp" | grep -q .; then
+			echo "$dir"
+			return
+		fi
+
+		while IFS= read -r child; do
+			walk "$child"
+		done < <(
+			find "$dir" -mindepth 1 -maxdepth 1 -type d | sort
+		)
+	}
+
+	walk "$SCAN_ROOT" | sort
+}
+
+make_snapshot() {
+	local out="$1"
+	: >"$out"
+
+	while IFS= read -r dir; do
+		local rel_dir
+		rel_dir="${dir#$ROOT/}"
+
+		find "$dir" -type f -name "*.cpp" | sort |
+			while IFS= read -r file; do
+				rel_file="${file#$dir/}"
+				printf '%s|%s\n' "$rel_dir" "$rel_file"
+			done
+	done < <(project_roots) | sort >"$out"
+}
+
+generate_local_cmake() {
+	while IFS= read -r dir; do
+		mapfile -t files < <(
+			find "$dir" -type f -name "*.cpp" |
+				sed "s|^$dir/||" |
+				sort
+		)
+
+		local cmake="$dir/CMakeLists.txt"
+
+		if [[ ${#files[@]} -eq 0 ]]; then
+			rm -f "$cmake"
+			continue
+		fi
+
+		local target
+		target="$(target_name "$dir")"
+
+		{
+			echo "cmake_minimum_required(VERSION 3.16)"
+			echo
+			echo "project($target LANGUAGES CXX)"
+			echo
+			echo "set(CMAKE_CXX_STANDARD 20)"
+			echo "set(CMAKE_CXX_STANDARD_REQUIRED ON)"
+			echo "set(CMAKE_CXX_EXTENSIONS OFF)"
+			echo
+			echo "add_executable($target"
+
+			for f in "${files[@]}"; do
+				echo "    $(quote_cmake "$f")"
+			done
+
+			echo ")"
+		} >"$cmake"
+
+	done < <(project_roots)
+
+	find "$SCAN_ROOT" -name CMakeLists.txt | while IFS= read -r file; do
+		dir="$(dirname "$file")"
+
+		if ! find "$dir" -maxdepth 1 -type f -name "*.cpp" | grep -q .; then
+			rm -f "$file"
+		fi
+	done
+}
+
+generate_root_cmake() {
+	local tmp
+	tmp="$(mktemp)"
+
+	cat >"$tmp" <<'EOF'
+cmake_minimum_required(VERSION 3.16)
+project(mazhul_cpp_development LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# AUTO_SUBDIRECTORIES_BEGIN
+EOF
+
+	find "$SCAN_ROOT" -name CMakeLists.txt | sort |
+		while IFS= read -r file; do
+			rel="$(dirname "$file")"
+			rel="${rel#$ROOT/}"
+			echo "add_subdirectory($(quote_cmake "$rel"))"
+		done >>"$tmp"
+
+	cat >>"$tmp" <<'EOF'
+
+# AUTO_SUBDIRECTORIES_END
+EOF
+
+	mv "$tmp" "$ROOT_CMAKE"
+}
+
+OLD="$(mktemp)"
+NEW="$(mktemp)"
+
+if [[ -f "$CACHE_FILE" ]]; then
+	cp "$CACHE_FILE" "$OLD"
+else
+	: >"$OLD"
+fi
+
+make_snapshot "$NEW"
+
+FILES_ADDED="$(comm -13 "$OLD" "$NEW" | wc -l | tr -d ' ')"
+FILES_REMOVED="$(comm -23 "$OLD" "$NEW" | wc -l | tr -d ' ')"
+
+OLD_PROJECTS="$(mktemp)"
+NEW_PROJECTS="$(mktemp)"
+
+cut -d'|' -f1 "$OLD" | sort -u >"$OLD_PROJECTS"
+cut -d'|' -f1 "$NEW" | sort -u >"$NEW_PROJECTS"
+
+PROJECTS_CREATED="$(comm -13 "$OLD_PROJECTS" "$NEW_PROJECTS" | wc -l | tr -d ' ')"
+PROJECTS_REMOVED="$(comm -23 "$OLD_PROJECTS" "$NEW_PROJECTS" | wc -l | tr -d ' ')"
+
+PROJECTS_UPDATED=0
+
+COMMON="$(mktemp)"
+comm -12 "$OLD_PROJECTS" "$NEW_PROJECTS" >"$COMMON"
+
+while IFS= read -r proj; do
+	[[ -n "$proj" ]] || continue
+
+	old_set="$(grep "^${proj}|" "$OLD" | sort || true)"
+	new_set="$(grep "^${proj}|" "$NEW" | sort || true)"
+
+	if [[ "$old_set" != "$new_set" ]]; then
+		PROJECTS_UPDATED=$((PROJECTS_UPDATED + 1))
+	fi
+done <"$COMMON"
+
+cp "$NEW" "$CACHE_FILE"
+
+generate_local_cmake
+generate_root_cmake
+cmake -S "$ROOT" -B "$ROOT/build" -G Ninja >/dev/null
+
+rm -f \
+	"$OLD" "$NEW" \
+	"$OLD_PROJECTS" "$NEW_PROJECTS" \
+	"$COMMON"
+echo "cmake synced | files +$FILES_ADDED -$FILES_REMOVED | projects +$PROJECTS_CREATED ~$PROJECTS_UPDATED -$PROJECTS_REMOVED"
