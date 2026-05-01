@@ -11,8 +11,8 @@ SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 
 # Ensure scripts directory exists
 if [[ ! -d "$SCRIPTS_DIR" ]]; then
-  echo "Error: scripts directory not found at $SCRIPTS_DIR" >&2
-  exit 1
+	echo "Error: scripts directory not found at $SCRIPTS_DIR" >&2
+	exit 1
 fi
 
 # Export PATH for commands
@@ -38,36 +38,36 @@ sudo yabai --load-sa
 echo "Setting global yabai configuration..." >&2
 
 yabai -m config \
-  mouse_follows_focus off \
-  focus_follows_mouse off \
-  window_placement second_child \
-  window_zoom_persist on \
-  window_shadow off \
-  window_animation_duration 0.08 \
-  window_animation_easing ease_out_circ \
-  window_opacity_duration 0.08 \
-  insert_feedback_color 0xffd75f5f \
-  split_ratio 0.50 \
-  split_type auto \
-  auto_balance off \
-  window_gap 8 \
-  top_padding 8 \
-  bottom_padding 8 \
-  left_padding 8 \
-  right_padding 8 \
-  layout bsp \
-  mouse_modifier fn \
-  mouse_action1 move \
-  mouse_action2 resize \
-  mouse_drop_action swap \
-  external_bar off:0:0
+	mouse_follows_focus off \
+	focus_follows_mouse off \
+	window_placement second_child \
+	window_zoom_persist on \
+	window_shadow off \
+	window_animation_duration 0.08 \
+	window_animation_easing ease_out_circ \
+	window_opacity_duration 0.08 \
+	insert_feedback_color 0xffd75f5f \
+	split_ratio 0.50 \
+	split_type auto \
+	auto_balance off \
+	window_gap 8 \
+	top_padding 8 \
+	bottom_padding 8 \
+	left_padding 8 \
+	right_padding 8 \
+	layout bsp \
+	mouse_modifier fn \
+	mouse_action1 move \
+	mouse_action2 resize \
+	mouse_drop_action swap \
+	external_bar off:0:0
 
 # =============================================================================
 # Initialize Workspaces
 # =============================================================================
 echo "Initializing workspaces..." >&2
 bash "$SCRIPTS_DIR/spaces.sh" init || {
-  echo "Error: Failed to initialize workspaces" >&2
+	echo "Error: Failed to initialize workspaces" >&2
 }
 
 # =============================================================================
@@ -81,7 +81,7 @@ echo "Loading opacity settings..." >&2
 bash "$SCRIPTS_DIR/opacity.sh" || echo "Warning: opacity.sh failed" >&2
 
 echo "Loading border settings..." >&2
-bash "$SCRIPTS_DIR/borders.sh" || echo "Warning: borders.sh failed" >&2
+# bash "$SCRIPTS_DIR/borders.sh" || echo "Warning: borders.sh failed" >&2
 
 echo "Loading event signals..." >&2
 bash "$SCRIPTS_DIR/signals.sh" || echo "Warning: signals.sh failed" >&2
