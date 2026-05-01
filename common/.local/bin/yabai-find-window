@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+app="$1"
+yabai -m query --windows | jq -c --arg app "$app" '
+  map(select(.app == $app)) | first
+'
