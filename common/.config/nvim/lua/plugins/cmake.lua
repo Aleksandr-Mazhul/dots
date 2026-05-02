@@ -33,7 +33,24 @@ return {
     keys = {
       {
         '<leader>ms',
-        '<cmd>CMakeSelectLaunchTarget<cr>',
+        function()
+          local cmake = require('cmake-tools')
+
+          cmake.select_build_target(true, function(result)
+            if result and result.code == 0 and result.data then
+              local target = result.data[1]
+
+              vim.schedule(function()
+                local config = cmake.get_config()
+                config.launch_target = target
+
+                vim.notify('Selected: ' .. target, vim.log.levels.INFO, {
+                  title = 'CMake',
+                })
+              end)
+            end
+          end)
+        end,
         desc = 'Select Project',
       },
 
@@ -54,6 +71,7 @@ return {
         '<cmd>CMakeDebug<cr>',
         desc = 'Debug',
       },
+
       {
         '<leader>mc',
         function()
