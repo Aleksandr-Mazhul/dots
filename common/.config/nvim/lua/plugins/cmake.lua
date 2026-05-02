@@ -14,7 +14,11 @@ return {
     },
     opts = {
       cmake_build_directory = 'build',
-      cmake_generate_options = { '-G', 'Ninja' },
+      cmake_generate_options = {
+        '-G',
+        'Ninja',
+        '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
+      },
       cmake_soft_link_compile_commands = true,
       cmake_compile_commands_from_lsp = true,
       cmake_notifications = true,
