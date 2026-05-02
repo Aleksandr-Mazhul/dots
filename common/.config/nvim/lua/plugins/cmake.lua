@@ -37,17 +37,30 @@ return {
           local cmake = require('cmake-tools')
 
           cmake.select_build_target(true, function(result)
-            if result and result.code == 0 and result.data then
-              local target = result.data[1]
+            if not (result and result.code == 0 and result.data) then
+              return
+            end
 
-              vim.schedule(function()
+            local build_target = result.data[1]
+            local launch_targets = cmake.get_launch_targets()
+
+            if not launch_targets then
+              return
+            end
+
+            for _, target in ipairs(launch_targets) do
+              if target.name == build_target then
                 local config = cmake.get_config()
                 config.launch_target = target
 
-                vim.notify('Selected: ' .. target, vim.log.levels.INFO, {
-                  title = 'CMake',
-                })
-              end)
+                vim.schedule(function()
+                  vim.notify('Selected: ' .. build_target, vim.log.levels.INFO, {
+                    title = 'CMake',
+                  })
+                end)
+
+                return
+              end
             end
           end)
         end,
@@ -68,7 +81,15 @@ return {
 
       {
         '<leader>rd',
-        '<cmd>CMakeDebug<cr>',
+        function()
+          local dap = require('dap')
+
+          dap.terminate()
+
+          vim.defer_fn(function()
+            dap.continue()
+          end, 100)
+        end,
         desc = 'Debug',
       },
 
