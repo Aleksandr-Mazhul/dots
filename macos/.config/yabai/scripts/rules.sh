@@ -12,25 +12,57 @@ yabai -m rule --remove 2>/dev/null || true
 declare -A APP_WORKSPACE=(
   ["WebStorm"]="W"
   ["CLion"]="C"
-  ["Mail"]="M"
-  ["WezTerm"]="Z"
-  ["Google Chrome"]="V"
-  ["Brave Browser"]="V"
   ["Arc"]="V"
   ["Safari"]="V"
+  ["Yandex"]="D"
+  ["Google Chrome"]="G"
+  ["ChatGPT"]="X"
+  ["WezTerm"]="Z"
   ["Finder"]="E"
   ["Telegram"]="T"
+  ["Discord"]="I"
+  ["Preview"]="P"
+  ["Wolfram"]="Q"
   ["Spotify"]="U"
-  ["Yandex"]="B"
   ["zoom.us"]="Y"
-  ["Discord"]="D"
-  ["Wolfram Mathematica"]="Q"
-  ["Notes"]="N"
-  ["ChatGPT"]="X"
+  ["Notes"]="R"
+  ["Mail"]="A"
 )
 
 # Apps unmanaged by yabai
 declare -a APPS_UNMANAGED=(
+  "Voice Memos"
+  "Stocks"
+  "SF Symbols"
+  "Chess"
+  "AirPort Utility"
+  "ColorSync Utility"
+  "Disk Utility"
+  "Font Book"
+  "Print Centre"
+  "Screen Sharing"
+  "Stickies"
+  "System Information"
+  "VoiceOver Utility"
+  "Console"
+  "Dictionary"
+  "Tenorshare 4DDiG"
+  "Time Machine"
+  "Shortcuts"
+  "Voice Memos"
+  "TV"
+  "Tips"
+  "Phone"
+  "Magnifier"
+  "IPhone Mirroring"
+  "Find My"
+  "Contacts"
+  "Clock"
+  "Cleamio"
+  "Calendar"
+  "AppCleaner"
+  "3uTools"
+  "Homerow"
   "System Preferences"
   "System Settings"
   "1Password"
@@ -42,11 +74,13 @@ declare -a APPS_UNMANAGED=(
   "Activity Monitor"
   "Directory Utility"
   "App Store"
-  "Preview"
   "Calculator"
   "Image Capture"
   "Audio MIDI Setup"
   "Migration Assistant"
+  "Books"
+  "Weather"
+  "BetterDisplay"
 )
 
 # JetBrains family
@@ -54,7 +88,6 @@ JETBRAINS_APPS='^(CLion|WebStorm|IntelliJ IDEA|PyCharm|GoLand|Rider|RubyMine|Php
 
 # JetBrains windows that should float
 declare -a JETBRAINS_FLOAT_PATTERNS=(
-  # basic actions
   '^Rename$'
   '^Delete$'
   '^Move$'
@@ -63,7 +96,6 @@ declare -a JETBRAINS_FLOAT_PATTERNS=(
   '^Replace.*'
   '^Commit.*'
 
-  # settings / config
   '^Settings$'
   '^Keyboard Shortcut$'
   '^Preferences$'
@@ -83,7 +115,6 @@ declare -a JETBRAINS_FLOAT_PATTERNS=(
   '^SDKs$'
   '^Project SDK.*'
 
-  # plugin / update / notification / errors
   '.*Plugin.*'
   '.*Update.*'
   '^IDE .*'
@@ -91,7 +122,6 @@ declare -a JETBRAINS_FLOAT_PATTERNS=(
   '.*Warning.*'
   '^Notifications$'
 
-  # create / open / import
   '^New .*'
   '^Open .*'
   '^Create .*'
@@ -103,25 +133,21 @@ declare -a JETBRAINS_FLOAT_PATTERNS=(
   '^Export .*'
   '^Invalidate .*'
 
-  # refactor / run / debug
   '^Refactor.*'
   '^Safe Delete.*'
   '^Run.*'
   '^Debug.*'
   '^Edit .*'
 
-  # code generation
   '^Generate.*'
   '^Override.*'
   '^Implement.*'
 
-  # extended file ops
   '^Rename .*'
   '^Move .*'
   '^Copy .*'
   '^Delete .*'
 
-  # git
   '^Git .*'
   '^Merge.*'
   '^Rebase.*'
@@ -129,7 +155,6 @@ declare -a JETBRAINS_FLOAT_PATTERNS=(
   '^Push.*'
   '^Pull.*'
 
-  # navigation
   '^Search Everywhere$'
   '^Go to .*'
 )
@@ -178,6 +203,13 @@ apply_jetbrains_rules() {
 apply_unmanaged_rules
 apply_dialog_rules
 apply_jetbrains_rules
+
+# Wolfram launcher -> float
+yabai -m rule --add \
+  app="^Wolfram$" \
+  title="^Welcome to Wolfram Mathematica$" \
+  manage=off 2>/dev/null || true
+
 apply_workspace_rules
 
 exit 0

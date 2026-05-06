@@ -7,28 +7,28 @@ set -e
 
 # Workspace mapping (yabai only supports letter labels, so "1" is mapped to "_1")
 declare -A WORKSPACE_MAP=(
-  ["_1"]=1
-  [B]=2
-  [C]=3
+  [W]=1
+  [C]=2
+  [V]=3
   [D]=4
-  [E]=5
-  [M]=6
-  [P]=7
-  [Q]=8
+  [G]=5
+  [X]=6
+  [Z]=7
+  [E]=8
   [T]=9
-  [U]=10
-  [V]=11
-  [W]=12
-  [X]=13
-  [Z]=14
-  [N]=15
-  [Y]=16
+  [I]=10
+  [P]=11
+  [Q]=12
+  [U]=13
+  [Y]=14
+  [R]=15
+  [A]=16
 )
 
 # Initialize all workspace labels
 init_workspaces() {
   local display_id="$1"
-  
+
   for label in "${!WORKSPACE_MAP[@]}"; do
     local index="${WORKSPACE_MAP[$label]}"
     current=$(yabai -m query --spaces | jq 'length')
@@ -36,7 +36,7 @@ init_workspaces() {
       yabai -m space --create 2>/dev/null || true
     fi
   done
-  
+
   # Label the spaces
   for label in "${!WORKSPACE_MAP[@]}"; do
     local index="${WORKSPACE_MAP[$label]}"
@@ -48,7 +48,7 @@ init_workspaces() {
 validate_workspaces() {
   local spaces_json
   spaces_json=$(yabai -m query --spaces 2>/dev/null || echo "[]")
-  
+
   # Check for duplicates
   local labels
   labels=$(echo "$spaces_json" | jq -r '.[].label' | sort)
@@ -56,12 +56,12 @@ validate_workspaces() {
   unique_count=$(echo "$labels" | wc -l)
   local duplicate_count
   duplicate_count=$(echo "$labels" | sort -u | wc -l)
-  
+
   if [[ "$unique_count" -ne "$duplicate_count" ]]; then
     echo "WARNING: Duplicate space labels detected" >&2
     return 1
   fi
-  
+
   # Check for sticky windows (should be none)
   local sticky_windows
   sticky_windows=$(yabai -m query --windows 2>/dev/null | jq '[.[] | select(.sticky == 1)] | length' || echo "0")
@@ -69,7 +69,7 @@ validate_workspaces() {
     echo "WARNING: $sticky_windows sticky windows detected (should be 0)" >&2
     return 1
   fi
-  
+
   return 0
 }
 
@@ -104,37 +104,37 @@ move_window_to_workspace() {
   local label="$2"
   local space_index
   space_index=$(get_workspace_index "$label")
-  
+
   if [[ -z "$space_index" ]]; then
     echo "Workspace not found: $label" >&2
     return 1
   fi
-  
+
   yabai -m window "$window_id" --space "$space_index"
 }
 
 # Main
 case "$1" in
-  init)
-    init_workspaces "${2:-}"
-    ;;
-  validate)
-    validate_workspaces
-    ;;
-  get-label)
-    get_workspace_label "$2"
-    ;;
-  get-index)
-    get_workspace_index "$2"
-    ;;
-  focus)
-    focus_workspace "$2"
-    ;;
-  move)
-    move_window_to_workspace "$2" "$3"
-    ;;
-  *)
-    echo "Usage: $0 {init|validate|get-label|get-index|focus|move} [args...]"
-    exit 1
-    ;;
+init)
+  init_workspaces "${2:-}"
+  ;;
+validate)
+  validate_workspaces
+  ;;
+get-label)
+  get_workspace_label "$2"
+  ;;
+get-index)
+  get_workspace_index "$2"
+  ;;
+focus)
+  focus_workspace "$2"
+  ;;
+move)
+  move_window_to_workspace "$2" "$3"
+  ;;
+*)
+  echo "Usage: $0 {init|validate|get-label|get-index|focus|move} [args...]"
+  exit 1
+  ;;
 esac
