@@ -1,6 +1,7 @@
 return {
   {
     'Civitasv/cmake-tools.nvim',
+
     cmd = {
       'CMakeGenerate',
       'CMakeBuild',
@@ -9,22 +10,27 @@ return {
       'CMakeSelectBuildTarget',
       'CMakeSelectLaunchTarget',
     },
+
     dependencies = {
       'nvim-lua/plenary.nvim',
     },
+
     opts = {
       cmake_build_directory = 'build',
+
       cmake_generate_options = {
         '-G',
         'Ninja',
         '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
       },
+
       cmake_soft_link_compile_commands = true,
       cmake_compile_commands_from_lsp = true,
       cmake_notifications = true,
 
       cmake_runner = {
         name = 'toggleterm',
+
         default_opts = {
           toggleterm = {
             direction = 'horizontal',
@@ -34,41 +40,14 @@ return {
         },
       },
     },
+
     keys = {
       {
         '<leader>ms',
         function()
-          local cmake = require('cmake-tools')
-
-          cmake.select_build_target(true, function(result)
-            if not (result and result.code == 0 and result.data) then
-              return
-            end
-
-            local build_target = result.data[1]
-            local launch_targets = cmake.get_launch_targets()
-
-            if not launch_targets then
-              return
-            end
-
-            for _, target in ipairs(launch_targets) do
-              if target.name == build_target then
-                local config = cmake.get_config()
-                config.launch_target = target
-
-                vim.schedule(function()
-                  vim.notify('Selected: ' .. build_target, vim.log.levels.INFO, {
-                    title = 'CMake',
-                  })
-                end)
-
-                return
-              end
-            end
-          end)
+          require('cmake-tools').select_launch_target()
         end,
-        desc = 'Select Project',
+        desc = 'Select Launch Target',
       },
 
       {
@@ -85,15 +64,7 @@ return {
 
       {
         '<leader>rd',
-        function()
-          local dap = require('dap')
-
-          dap.terminate()
-
-          vim.defer_fn(function()
-            dap.continue()
-          end, 100)
-        end,
+        '<cmd>CMakeDebug<cr>',
         desc = 'Debug',
       },
 
@@ -110,6 +81,7 @@ return {
               end
 
               local msg = table.concat(data, '\n'):gsub('\n+$', '')
+
               if msg ~= '' then
                 vim.schedule(function()
                   vim.notify(msg, vim.log.levels.INFO, {
@@ -125,6 +97,7 @@ return {
               end
 
               local msg = table.concat(data, '\n'):gsub('\n+$', '')
+
               if msg ~= '' then
                 vim.schedule(function()
                   vim.notify(msg, vim.log.levels.ERROR, {
@@ -135,6 +108,7 @@ return {
             end,
           })
         end,
+
         desc = 'Sync CMake',
       },
     },
