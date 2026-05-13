@@ -1700,6 +1700,158 @@
                   }
                 ],
                 "type": "basic"
+              },
+              {
+                "conditions": [
+                  {
+                    "name": "cmd_layer",
+                    "type": "variable_if",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_a_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_s_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_d_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_f_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  }
+                ],
+                "from": {
+                  "key_code": "h"
+                },
+                "to": [
+                  {
+                    "key_code": "left_arrow"
+                  }
+                ],
+                "type": "basic"
+              },
+              {
+                "conditions": [
+                  {
+                    "name": "cmd_layer",
+                    "type": "variable_if",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_a_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_s_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_d_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_f_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  }
+                ],
+                "from": {
+                  "key_code": "j"
+                },
+                "to": [
+                  {
+                    "key_code": "down_arrow"
+                  }
+                ],
+                "type": "basic"
+              },
+              {
+                "conditions": [
+                  {
+                    "name": "cmd_layer",
+                    "type": "variable_if",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_a_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_s_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_d_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_f_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  }
+                ],
+                "from": {
+                  "key_code": "k"
+                },
+                "to": [
+                  {
+                    "key_code": "up_arrow"
+                  }
+                ],
+                "type": "basic"
+              },
+              {
+                "conditions": [
+                  {
+                    "name": "cmd_layer",
+                    "type": "variable_if",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_a_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_s_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_d_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  },
+                  {
+                    "name": "cmd_f_held",
+                    "type": "variable_unless",
+                    "value": 1
+                  }
+                ],
+                "from": {
+                  "key_code": "l"
+                },
+                "to": [
+                  {
+                    "key_code": "right_arrow"
+                  }
+                ],
+                "type": "basic"
               }
             ]
           },
@@ -2218,7 +2370,7 @@
             ]
           },
           {
-            "description": "ISO \u2192 grave",
+            "description": "ISO → grave",
             "enabled": false,
             "manipulators": [
               {
@@ -2262,7 +2414,7 @@
             ]
           },
           {
-            "description": "Hyper Key (\u2303\u2325\u21e7\u2318)",
+            "description": "Hyper Key (⌃⌥⇧⌘)",
             "enabled": false,
             "manipulators": [
               {
