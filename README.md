@@ -96,6 +96,7 @@ dotfiles/
 ├── hosts/                         # Machine-specific overrides
 │   └── macbook/
 │       ├── .config/
+│       ├── .gitconfig.local
 │       └── .zsh/
 │           └── host.zsh
 │
@@ -179,7 +180,7 @@ cd ~/dotfiles
 
 stow common
 stow macos
-stow -d hosts -t ~ macbook
+stow -d hosts -t ~ <hostname>
 ```
 
 После этого конфиги подключены.
@@ -308,7 +309,7 @@ git pull --rebase
 
 stow -R common
 stow -R macos
-stow -R -d hosts -t ~ macbook
+stow -R -d hosts -t ~ <hostname>
 ```
 
 ---
@@ -345,7 +346,7 @@ private/.config/github-copilot/
 ```bash
 stow -n -v common
 stow -n -v macos
-stow -n -v -d hosts -t ~ macbook
+stow -n -v -d hosts -t ~ <hostname>
 ```
 
 Если нет conflict/error → всё корректно.

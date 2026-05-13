@@ -2,6 +2,7 @@
 set -euo pipefail
 
 DOTFILES="${DOTFILES:-$HOME/dotfiles}"
+HOST_PACKAGE="${HOST_PACKAGE:-$(hostname -s)}"
 cd "$DOTFILES"
 
 echo "📦 Installing GNU Stow..."
@@ -17,7 +18,11 @@ fi
 echo "🔗 Creating symlinks with GNU Stow..."
 stow common
 stow macos
-stow hosts/macbook
+if [ -d "$DOTFILES/hosts/$HOST_PACKAGE" ]; then
+  stow -d hosts -t "$HOME" "$HOST_PACKAGE"
+else
+  echo "ℹ️  Host package hosts/$HOST_PACKAGE not found. Skipping host overrides."
+fi
 
 echo "✅ Bootstrap complete! Your dotfiles are ready."
 echo "   Source your shell: exec $SHELL"
