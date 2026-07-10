@@ -1,8 +1,37 @@
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Editors
 *.swp
 *.swo
-node_modules/
+*~
+*.bak
+*.orig
+
+# IDE (personal settings — never commit)
 .idea/
 .vscode/
+
+# Dependencies & build
+node_modules/
 dist/
 build/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa
+id_rsa.*
+
+# Misc
+*.log
+.cache/
