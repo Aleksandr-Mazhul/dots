@@ -1,0 +1,16 @@
+#!/bin/bash
+# Interactive region screenshot: clipboard first (instant paste), then save file.
+set -euo pipefail
+
+export HOME="/Users/alexandermazhul"
+export USER="alexandermazhul"
+DIR="${HOME}/screenshots"
+mkdir -p "$DIR"
+
+file="${DIR}/Screenshot $(date +'%Y-%m-%d at %H.%M.%S').png"
+# -c puts PNG on the clipboard as soon as the selection is made.
+# Filename is written in the same process; cancel exits non-zero.
+if ! /usr/sbin/screencapture -i -c -x "$file"; then
+  rm -f "$file"
+  exit 0
+fi

@@ -3,3 +3,10 @@ set -euo pipefail
 
 # macOS defaults can be added here.
 # Keep this script idempotent.
+
+SCREENSHOT_DIR="${HOME}/screenshots"
+mkdir -p "$SCREENSHOT_DIR"
+defaults write com.apple.screencapture location -string "$SCREENSHOT_DIR"
+defaults write com.apple.screencapture target -string file
+defaults write com.apple.screencapture show-thumbnail -bool false
+killall SystemUIServer 2>/dev/null || true

@@ -1,0 +1,31 @@
+#!/bin/bash
+# Copy the newest screenshot in ~/screenshots to the clipboard.
+# Used by the folder-watch LaunchAgent so Cmd+Shift+3/4 save a file AND paste.
+set -euo pipefail
+
+DIR="${HOME}/screenshots"
+mkdir -p "$DIR"
+
+newest=""
+newest_ts=0
+while IFS= read -r -d '' f; do
+  ts=$(stat -f %m "$f")
+  if (( ts > newest_ts )); then
+    newest_ts=$ts
+    newest=$f
+  fi
+done < <(find "$DIR" -maxdepth 1 \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o -iname '*.tif' -o -iname '*.tiff' \) -print0 2>/dev/null)
+
+[[ -n "$newest" ]] || exit 0
+
+now=$(date +%s)
+(( now - newest_ts <= 8 )) || exit 0
+
+# Skip if we already copied this exact file
+stamp="${TMPDIR:-/tmp}/screenshot-to-clipboard.last"
+if [[ -f "$stamp" ]] && [[ "$(cat "$stamp")" == "$newest:$newest_ts" ]]; then
+  exit 0
+fi
+
+osascript -e "set the clipboard to (read (POSIX file \"${newest}\") as «class PNGf»)"
+printf '%s\n' "$newest:$newest_ts" > "$stamp"
