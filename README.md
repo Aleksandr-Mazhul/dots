@@ -44,6 +44,8 @@ dotfiles/
 │   ├── .config/
 │   │   ├── gh/
 │   │   ├── github-copilot/
+│   │   ├── kanata/
+│   │   │   └── kanata.kbd         # shared HRM + layers (macOS/Linux)
 │   │   ├── lazygit/
 │   │   ├── nvim/
 │   │   ├── starship.toml
@@ -100,8 +102,11 @@ dotfiles/
 │       └── .zsh/
 │           └── host.zsh
 │
-├── linux/                         # Future Linux layer
+├── linux/                         # Linux layer
 │   ├── .config/
+│   │   ├── systemd/user/kanata.service
+│   │   ├── tmux/
+│   │   └── wezterm/
 │   └── .zsh/
 │
 ├── private/                       # ignored by git

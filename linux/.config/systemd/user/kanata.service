@@ -1,0 +1,13 @@
+[Unit]
+Description=Kanata keyboard remapper
+Documentation=file://%h/dotfiles/common/.config/kanata/kanata.kbd
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/env kanata --no-wait --cfg %h/.config/kanata/kanata.kbd
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

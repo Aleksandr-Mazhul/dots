@@ -1,0 +1,464 @@
+;; Shared Kanata config (macOS + Linux). Stow: common/.config/kanata/kanata.kbd
+;; OS-specific bits live in (platform ...) blocks below.
+;;
+;; Timings (change here → both machines after git pull && ./scripts/sync.sh)
+;;   tap-hold-require-prior-idle  120ms   fast typing → letter, skip wait
+;;   tap / tap-repress            200ms   double-tap still a letter
+;;   hold (tap-hold-release)      220ms   hold this long alone → modifier
+;;   chords b/n/m+space            50ms
+;;
+;; HRM  asdf = ctrl / opt / cmd / shift
+;;      jkl; = shift / cmd / opt / ctrl
+;;      Permissive hold: mod only if another key is pressed AND released
+;;      while HRM is still held.
+;;
+;; Layers: caps tap=esc hold=hyper | left met=cmd-nav | right alt=symbols
+;;         F-row = media; hold repeats, release stops; fn hold = F1-F12; fn tap = Ctrl-Space
+;; Emergency exit: Left Ctrl + Space + Escape
+
+(defcfg
+  process-unmapped-keys yes
+  concurrent-tap-hold yes
+  danger-enable-cmd yes
+  log-layer-changes no
+  tap-hold-require-prior-idle 120
+  macos-dev-names-include (
+    "Apple Internal Keyboard / Trackpad"
+  )
+  macos-dev-names-exclude (
+    "Karabiner DriverKit VirtualHIDKeyboard 1.8.0"
+    "Karabiner DriverKit VirtualHIDKeyboard"
+  )
+  linux-continue-if-no-devs-found yes
+  linux-dev-names-exclude (
+    "kanata"
+    "Kanata"
+  )
+)
+
+(defvar
+  tap 200
+  hold 220
+)
+
+(defsrc
+  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
+  esc  1    2    3    4    5    6    7    8    9    0    min  eql  bspc
+  tab  q    w    e    r    t    y    u    i    o    p    lbrc rbrc bksl
+  caps a    s    d    f    g    h    j    k    l    scln apos ret
+  lsft 102d z    x    c    v    b    n    m    comm .    /    rsft
+  fn   lctl lalt lmet           spc            rmet ralt rctl
+  left down up   rght
+)
+
+(defalias
+  ;; Permissive hold: becomes a mod only if another key is pressed AND
+  ;; released while this key is still held. Normal typing (including
+  ;; opposite-hand pairs like фг / жи) releases the first key first → letter.
+  hra (tap-hold-release $tap $hold a lctl)
+  hrs (tap-hold-release $tap $hold s lalt)
+  hrd (tap-hold-release $tap $hold d lmet)
+  hrf (tap-hold-release $tap $hold f lsft)
+  hrj (tap-hold-release $tap $hold j rsft)
+  hrk (tap-hold-release $tap $hold k rmet)
+  hrl (tap-hold-release $tap $hold l ralt)
+  hrsc (tap-hold-release $tap $hold scln rctl)
+
+  cap (tap-hold-press $tap $hold esc (layer-while-held hyper) (require-prior-idle 0))
+  lcmd (layer-while-held cmd)
+  ropt (layer-while-held symbols)
+)
+
+(platform (macos)
+  (defvirtualkeys
+    v-brup-go   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start brightness-up)
+    v-brup-stop (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-stop brightness-up)
+    v-brdn-go   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start brightness-down)
+    v-brdn-stop (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-stop brightness-down)
+    v-volu-go   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start volume-up)
+    v-volu-stop (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-stop volume-up)
+    v-vold-go   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start volume-down)
+    v-vold-stop (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-stop volume-down)
+  )
+)
+
+(platform (macos)
+  (defalias
+    k-brup (multi (on-press tap-vkey v-brup-go) (on-release tap-vkey v-brup-stop))
+    k-brdn (multi (on-press tap-vkey v-brdn-go) (on-release tap-vkey v-brdn-stop))
+    k-volu (multi (on-press tap-vkey v-volu-go) (on-release tap-vkey v-volu-stop))
+    k-vold (multi (on-press tap-vkey v-vold-go) (on-release tap-vkey v-vold-stop))
+    k-mute (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key mute)
+    k-pp   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key play-pause)
+    k-next (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key next)
+    k-prev (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key previous)
+    k-mctl (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g -a "Mission Control")
+    k-sls  (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g /System/Library/CoreServices/Spotlight.app)
+    k-dtn  dtn
+    k-dnd  (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/yakitrak/do-not-disturb/toggle?launchType=background")
+    fnl (tap-hold-keys $tap $hold C-spc (layer-while-held fkeys) (hold-on-press f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12))
+  )
+)
+
+(platform (linux)
+  (defalias
+    k-brup brup
+    k-brdn brdn
+    k-volu volu
+    k-vold vold
+    k-mute mute
+    k-pp   pp
+    k-next next
+    k-prev prev
+    k-mctl XX
+    k-sls  XX
+    k-dtn  XX
+    k-dnd  XX
+    fnl (tap-hold-keys $tap $hold C-spc (layer-while-held fkeys) (hold-on-press f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12))
+  )
+)
+
+(deflayer base
+  @k-brdn @k-brup @k-mctl @k-sls @k-dtn @k-dnd @k-prev @k-pp @k-next @k-mute @k-vold @k-volu
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  @cap @hra @hrs @hrd @hrf _    _    @hrj @hrk @hrl @hrsc _    _
+  _    grv  _    _    _    _    _    _    _    _    _    _    _
+  @fnl _    _    @lcmd              _              _    @ropt _
+  _    _    _    _
+)
+
+;; b/n/m + space chords (global in Karabiner, no layer condition)
+(defchordsv2
+  (b spc) esc 50 all-released ()
+  (n spc) tab 50 all-released ()
+  (m spc) ret 50 all-released ()
+)
+
+;; ---------------------------------------------------------------------------
+;; Left Command layer (Karabiner: cmd_layer)
+;; Physical left cmd is consumed as the layer key (lazy cmd via explicit M-*).
+;; asdf on this layer are hold-only modifiers, matching Karabiner variables.
+;; ---------------------------------------------------------------------------
+(deflayermap (cmd)
+  a lctl
+  s lalt
+  d lmet
+  f lsft
+
+  h    left
+  j    down
+  k    up
+  l    rght
+  left left
+  down down
+  up   up
+  rght rght
+
+  scln C-a
+  i    C-b
+  u    S-M-lbrc
+  o    S-M-rbrc
+  p    pgdn
+  n    @cmd-ss
+  esc  A-M-esc
+
+  ;; Unmapped keys in Karabiner still sent Command (lazy left_command)
+  q    M-q
+  w    M-w
+  e    M-e
+  r    M-r
+  t    M-t
+  y    M-y
+  g    M-g
+  z    M-z
+  x    M-x
+  c    M-c
+  v    M-v
+  b    M-b
+  m    M-m
+  tab  M-tab
+  spc  M-spc
+  ret  M-ret
+  bspc M-bspc
+  grv  M-grv
+  102d M-grv
+  1    M-1
+  2    M-2
+  3    M-3
+  4    M-4
+  5    M-5
+  6    M-6
+  7    M-7
+  8    M-8
+  9    M-9
+  0    M-0
+  min  M-min
+  eql  M-eql
+  lbrc M-lbrc
+  rbrc M-rbrc
+  apos M-apos
+  comm M-comm
+  .    M-.
+  /    M-/
+  bksl M-bksl
+)
+
+;; ---------------------------------------------------------------------------
+;; Right Option layer (Karabiner: right_opt_layer)
+;; ---------------------------------------------------------------------------
+(deflayermap (symbols)
+  c    min
+  a    S-6
+  f    S-4
+  s    eql
+  g    S-8
+  d    S-min
+  x    S-bksl
+  lmet S-eql
+  lalt S-7
+  2    S-9
+  3    S-0
+  w    S-apos
+  e    apos
+  q    S-lbrc
+  r    S-rbrc
+  tab  S-2
+  caps S-3
+  lsft S-1
+  z    S-comm
+  v    S-.
+  b    /
+  spc  (macro A-spc 20 C-spc)
+)
+
+;; ---------------------------------------------------------------------------
+;; Hyper (Caps held) + sublayers
+;; Shell actions differ per OS; key actions are shared.
+;; ---------------------------------------------------------------------------
+(platform (macos)
+  (defalias
+    hy-spc (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/stellate/mxstbr-commands/create-notion-todo")
+    hb-t (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "https://twitter.com")
+    hb-p (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "https://mxstbr.com/cal")
+    hb-y (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "https://news.ycombinator.com")
+    hb-f (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "https://facebook.com")
+    hb-r (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "https://reddit.com")
+    hb-h (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "https://hashnode.com/draft")
+    ho-1 (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "1Password.app")
+    ho-g (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Google Chrome.app")
+    ho-c (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Notion Calendar.app")
+    ho-v (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Zed.app")
+    ho-d (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Discord.app")
+    ho-s (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Slack.app")
+    ho-e (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Superhuman.app")
+    ho-n (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Notion.app")
+    ho-t (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Terminal.app")
+    ho-h (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "notion://www.notion.so/stellatehq/7b33b924746647499d906c55f89d5026")
+    ho-z (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "zoom.us.app")
+    ho-m (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Reflect.app")
+    ho-r (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Reflect.app")
+    ho-f (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Finder.app")
+    ho-i (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Texts.app")
+    ho-p (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "Spotify.app")
+    ho-a (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -a "iA Presenter.app")
+    ho-w (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "Texts")
+    ho-l (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/stellate/mxstbr-commands/open-mxs-is-shortlink")
+    hw-y (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g "raycast://extensions/raycast/window-management/previous-display")
+    hw-o (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g "raycast://extensions/raycast/window-management/next-display")
+    hw-k (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g "raycast://extensions/raycast/window-management/top-half")
+    hw-j (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g "raycast://extensions/raycast/window-management/bottom-half")
+    hw-h (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g "raycast://extensions/raycast/window-management/left-half")
+    hw-l (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g "raycast://extensions/raycast/window-management/right-half")
+    hw-f (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open -g "raycast://extensions/raycast/window-management/maximize")
+    hs-e (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/thomas/elgato-key-light/toggle?launchType=background")
+    hs-d (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/yakitrak/do-not-disturb/toggle?launchType=background")
+    hs-t (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/raycast/system/toggle-system-appearance")
+    hs-c (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/raycast/system/open-camera")
+    hr-1 (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/VladCuciureanu/toothpick/connect-favorite-device-1")
+    hr-2 (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/VladCuciureanu/toothpick/connect-favorite-device-2")
+    hr-c (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/thomas/color-picker/pick-color")
+    hr-n (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://script-commands/dismiss-notifications")
+    hr-l (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/stellate/mxstbr-commands/create-mxs-is-shortlink")
+    hr-e (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/raycast/emoji-symbols/search-emoji-symbols")
+    hr-p (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/raycast/raycast/confetti")
+    hr-a (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/raycast/raycast-ai/ai-chat")
+    hr-s (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/peduarte/silent-mention/index")
+    hr-h (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/raycast/clipboard-history/clipboard-history")
+    cmd-ss (cmd /bin/launchctl kickstart gui/501/com.alexandermazhul.screenshot-region)
+  )
+)
+
+(platform (linux)
+  (defalias
+    hy-spc XX
+    hb-t (cmd xdg-open https://twitter.com)
+    hb-p (cmd xdg-open https://mxstbr.com/cal)
+    hb-y (cmd xdg-open https://news.ycombinator.com)
+    hb-f (cmd xdg-open https://facebook.com)
+    hb-r (cmd xdg-open https://reddit.com)
+    hb-h (cmd xdg-open https://hashnode.com/draft)
+    ho-1 XX
+    ho-g XX
+    ho-c XX
+    ho-v XX
+    ho-d XX
+    ho-s XX
+    ho-e XX
+    ho-n XX
+    ho-t XX
+    ho-h XX
+    ho-z XX
+    ho-m XX
+    ho-r XX
+    ho-f (cmd xdg-open .)
+    ho-i XX
+    ho-p XX
+    ho-a XX
+    ho-w XX
+    ho-l XX
+    hw-y XX
+    hw-o XX
+    hw-k XX
+    hw-j XX
+    hw-h XX
+    hw-l XX
+    hw-f XX
+    hs-e XX
+    hs-d XX
+    hs-t XX
+    hs-c XX
+    hr-1 XX
+    hr-2 XX
+    hr-c XX
+    hr-n XX
+    hr-l XX
+    hr-e XX
+    hr-p XX
+    hr-a XX
+    hr-s XX
+    hr-h XX
+    cmd-ss XX
+  )
+)
+
+;; F-row is media on base. Hold Globe/fn for real F1-F12; tap fn to switch
+;; ABC ↔ RussianWin. DriverKit grabs the whole keyboard, so this cannot bypass Kanata.
+(deflayermap (fkeys)
+  f1  f1
+  f2  f2
+  f3  f3
+  f4  f4
+  f5  f5
+  f6  f6
+  f7  f7
+  f8  f8
+  f9  f9
+  f10 f10
+  f11 f11
+  f12 f12
+)
+
+(deflayermap (hyper)
+  b   (layer-while-held hyper-b)
+  o   (layer-while-held hyper-o)
+  w   (layer-while-held hyper-w)
+  s   (layer-while-held hyper-s)
+  v   (layer-while-held hyper-v)
+  c   (layer-while-held hyper-c)
+  r   (layer-while-held hyper-r)
+  spc @hy-spc
+)
+
+(deflayermap (hyper-b)
+  t @hb-t
+  p @hb-p
+  y @hb-y
+  f @hb-f
+  r @hb-r
+  h @hb-h
+)
+
+(deflayermap (hyper-o)
+  1 @ho-1
+  g @ho-g
+  c @ho-c
+  v @ho-v
+  d @ho-d
+  s @ho-s
+  e @ho-e
+  n @ho-n
+  t @ho-t
+  h @ho-h
+  z @ho-z
+  m @ho-m
+  r @ho-r
+  f @ho-f
+  i @ho-i
+  p @ho-p
+  a @ho-a
+  w @ho-w
+  l @ho-l
+)
+
+(deflayermap (hyper-w)
+  scln M-h
+  y    @hw-y
+  o    @hw-o
+  k    @hw-k
+  j    @hw-j
+  h    @hw-h
+  l    @hw-l
+  f    @hw-f
+  u    C-S-tab
+  i    C-tab
+  n    M-grv
+  b    M-lbrc
+  m    M-rbrc
+)
+
+(deflayermap (hyper-s)
+  u    @k-volu
+  j    @k-vold
+  i    @k-brup
+  k    @k-brdn
+  l    C-M-q
+  p    @k-pp
+  scln @k-next
+  e    @hs-e
+  d    @hs-d
+  t    @hs-t
+  c    @hs-c
+  v    A-spc
+)
+
+(deflayermap (hyper-v)
+  h left
+  j down
+  k up
+  l rght
+  m C-f
+  s C-j
+  d S-M-d
+  u pgdn
+  i pgup
+)
+
+(deflayermap (hyper-c)
+  p @k-pp
+  n @k-next
+  b @k-prev
+)
+
+(deflayermap (hyper-r)
+  1 @hr-1
+  2 @hr-2
+  c @hr-c
+  n @hr-n
+  l @hr-l
+  e @hr-e
+  p @hr-p
+  a @hr-a
+  s @hr-s
+  h @hr-h
+)

@@ -1,5 +1,6 @@
 .env
 private/
+macos/.config/kanata/bin/
 .DS_Store
 *.bak*
 *.bak-*
