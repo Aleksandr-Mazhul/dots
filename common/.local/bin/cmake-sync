@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="${CPP_WORKSPACE:-$HOME/CLionProjects/mazhul-cpp-development}"
-SCAN_ROOT="$ROOT/cpp-semester-2"
+ROOT="${CPP_WORKSPACE:-$HOME/projects/archive/cpp-development}"
+SCAN_ROOT="$ROOT/semester-2"
 ROOT_CMAKE="$ROOT/CMakeLists.txt"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
 CACHE_FILE="$CACHE_DIR/cmake-sync.snapshot"
