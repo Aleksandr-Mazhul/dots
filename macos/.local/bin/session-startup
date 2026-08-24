@@ -1,0 +1,348 @@
+#!/bin/bash
+# Login session launcher: open daily apps, connect Windscribe via CLI, then ChatGPT.
+# Intended to run once from launchd at Aqua login (not KeepAlive).
+set -euo pipefail
+
+export HOME="/Users/alexandermazhul"
+export USER="alexandermazhul"
+
+OPEN="/usr/bin/open"
+WINDSCRIBE_CLI="/Applications/Windscribe.app/Contents/MacOS/windscribe-cli"
+WINDSCRIBE_ENGINE="/Applications/Windscribe.app/Contents/MacOS/Windscribe"
+YABAI="/opt/homebrew/bin/yabai"
+PYTHON="/usr/bin/python3"
+LOG="${HOME}/Library/Logs/session-startup.log"
+YABAI_READY="/tmp/yabai.${USER}.ready"
+AUTOSTART_LOCK="/tmp/yabai.${USER}.autostart"
+
+WINDSCRIBE_LOCATION="${WINDSCRIBE_LOCATION:-best}"
+WINDSCRIBE_PROTOCOL="${WINDSCRIBE_PROTOCOL:-wireguard}"
+VPN_TIMEOUT="${VPN_TIMEOUT:-60}"
+CLI_TIMEOUT="${CLI_TIMEOUT:-30}"
+LOGIN_TIMEOUT="${LOGIN_TIMEOUT:-45}"
+YABAI_READY_TIMEOUT="${YABAI_READY_TIMEOUT:-45}"
+PLACEMENT_TIMEOUT="${PLACEMENT_TIMEOUT:-12}"
+
+mkdir -p "$(dirname "$LOG")"
+exec >>"$LOG" 2>&1
+
+# Suppress yabai "follow new window" while login apps are spawning.
+# Cleared on exit so interactive follow returns.
+: >"$AUTOSTART_LOCK"
+cleanup() {
+  rm -f "$AUTOSTART_LOCK"
+}
+trap cleanup EXIT
+
+log() {
+  echo "$(date '+%F %T') $*" >&2
+}
+
+open_app() {
+  local name="$1"
+  local bundle="${2:-}"
+  log "open ${name}"
+  if [[ -n "$bundle" ]] && "$OPEN" -g -b "$bundle"; then
+    return 0
+  fi
+  if "$OPEN" -ga "$name"; then
+    return 0
+  fi
+  log "failed to open ${name}"
+  return 0
+}
+
+yabai_config_ready() {
+  local ready_pid
+  [[ -f "$YABAI_READY" ]] || return 1
+  ready_pid="$(cat "$YABAI_READY" 2>/dev/null || true)"
+  [[ -n "$ready_pid" ]] || return 1
+  pgrep -x yabai | grep -qx "$ready_pid"
+}
+
+wait_until_tiling_ready() {
+  local start
+  if [[ ! -x "$YABAI" ]]; then
+    log "yabai missing, skip wait"
+    return 0
+  fi
+
+  start=$SECONDS
+  while (( SECONDS - start < YABAI_READY_TIMEOUT )); do
+    if yabai_config_ready; then
+      log "yabai config ready pid=$(pgrep -nx yabai || true)"
+      return 0
+    fi
+    sleep 0.05
+  done
+  log "yabai config not ready after ${YABAI_READY_TIMEOUT}s, continuing anyway"
+}
+
+launch_apps() {
+  open_app "Finder" "com.apple.finder" &
+  open_app "Telegram" "ru.keepcoder.Telegram" &
+  start_wezterm &
+  open_app "Arc" "company.thebrowser.Browser" &
+  open_app "Yandex" "ru.yandex.desktop.yandex-browser" &
+  open_app "Cursor" "com.todesktop.230313mzl4w4u92" &
+  wait || true
+  log "independent apps launched"
+}
+
+# `open -g` often starts WezTerm without a window. Force a GUI instance.
+start_wezterm() {
+  local gui="/Applications/WezTerm.app/Contents/MacOS/wezterm-gui"
+  log "open WezTerm"
+  if [[ -x "$gui" ]]; then
+    /usr/bin/nohup "$gui" >/dev/null 2>&1 &
+    return 0
+  fi
+  if "$OPEN" -na WezTerm --args start; then
+    return 0
+  fi
+  log "failed to open WezTerm"
+}
+
+# Telegram (and some others) create the AX window after `open` returns, then
+# macOS Restore can pin it to the focused space. Rules already exist by then,
+# so they miss the window. Keep moving known login apps until they sit right.
+enforce_login_placement() {
+  local deadline
+  if [[ ! -x "$YABAI" ]]; then
+    return 0
+  fi
+  log "enforce login placement"
+  deadline=$((SECONDS + PLACEMENT_TIMEOUT))
+  while (( SECONDS < deadline )); do
+    if "$PYTHON" - "$YABAI" <<'PY'
+import json, subprocess, sys
+
+yabai = sys.argv[1]
+wanted = {
+    "Finder": "E",
+    "Telegram": "T",
+    "WezTerm": "Z",
+    "wezterm-gui": "Z",
+    "Arc": "V",
+    "Yandex": "D",
+    "Cursor": "C",
+    "ChatGPT": "X",
+}
+required_telegram = {"Telegram"}
+required_wezterm = {"WezTerm", "wezterm-gui"}
+
+try:
+    windows = json.loads(subprocess.check_output([yabai, "-m", "query", "--windows"]))
+    spaces = json.loads(subprocess.check_output([yabai, "-m", "query", "--spaces"]))
+except Exception:
+    raise SystemExit(1)
+
+index_to_label = {space.get("index"): space.get("label") or "" for space in spaces}
+wrong = 0
+placed = set()
+
+for window in windows:
+    app = window.get("app")
+    if app not in wanted:
+        continue
+    if window.get("subrole") != "AXStandardWindow":
+        continue
+    target = wanted[app]
+    current = index_to_label.get(window.get("space"), "")
+    if current == target:
+        placed.add(app)
+        continue
+    subprocess.call(
+        [yabai, "-m", "window", str(window["id"]), "--space", target],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    wrong += 1
+
+raise SystemExit(0 if required_telegram <= placed and placed & required_wezterm and wrong == 0 else 1)
+PY
+    then
+      log "login windows placed"
+      return 0
+    fi
+    sleep 0.2
+  done
+  log "login placement timed out"
+}
+
+windscribe_status() {
+  "$WINDSCRIBE_CLI" status 2>/dev/null || true
+}
+
+is_logged_in() {
+  printf '%s\n' "$1" | grep -q 'Login state: Logged in'
+}
+
+is_connected() {
+  # "*" prefix on Connected means the tunnel test is still pending.
+  printf '%s\n' "$1" | grep -q 'Connect state: Connected:'
+}
+
+cli_talks_to_engine() {
+  local status
+  status="$(windscribe_status)"
+  [[ -n "$status" ]] && ! printf '%s\n' "$status" | grep -q 'Aborting:'
+}
+
+# Close/hide any Windscribe window without activating the app.
+# The CLI talks to the engine process; a visible window is not required.
+hide_windscribe_ui() {
+  if [[ -x "$YABAI" && -x "$PYTHON" ]]; then
+    local ids id
+    ids="$("$YABAI" -m query --windows 2>/dev/null | "$PYTHON" -c '
+import json, sys
+try:
+    wins = json.load(sys.stdin)
+except Exception:
+    raise SystemExit(0)
+for w in wins:
+    if w.get("app") == "Windscribe":
+        print(w["id"])
+' || true)"
+    for id in $ids; do
+      "$YABAI" -m window "$id" --minimize >/dev/null 2>&1 || true
+    done
+  fi
+  /usr/bin/osascript >/dev/null 2>&1 <<'APPLESCRIPT' || true
+tell application "System Events"
+  if exists process "Windscribe" then
+    set visible of process "Windscribe" to false
+  end if
+end tell
+APPLESCRIPT
+}
+
+ensure_windscribe_engine() {
+  if cli_talks_to_engine; then
+    return 0
+  fi
+  if [[ ! -x "$WINDSCRIBE_ENGINE" ]]; then
+    log "missing windscribe engine at ${WINDSCRIBE_ENGINE}"
+    return 1
+  fi
+  # Do not `open -a`: that restores/shows the GUI. Start the engine only.
+  log "start windscribe engine in background"
+  /usr/bin/nohup "$WINDSCRIBE_ENGINE" >/dev/null 2>&1 &
+  hide_windscribe_ui
+}
+
+wait_for_cli() {
+  local i status
+  for i in $(seq 1 "$CLI_TIMEOUT"); do
+    hide_windscribe_ui
+    if cli_talks_to_engine; then
+      log "windscribe-cli ready"
+      return 0
+    fi
+    sleep 1
+  done
+  log "windscribe-cli did not become ready"
+  return 1
+}
+
+wait_until_logged_in() {
+  local deadline status
+  deadline=$((SECONDS + LOGIN_TIMEOUT))
+  while (( SECONDS < deadline )); do
+    hide_windscribe_ui
+    status="$(windscribe_status)"
+    if is_logged_in "$status"; then
+      log "windscribe logged in"
+      return 0
+    fi
+    sleep 1
+  done
+  log "windscribe login timed out after ${LOGIN_TIMEOUT}s"
+  log "$(windscribe_status)"
+  return 1
+}
+
+wait_until_connected() {
+  local deadline status
+  deadline=$((SECONDS + VPN_TIMEOUT))
+  while (( SECONDS < deadline )); do
+    hide_windscribe_ui
+    status="$(windscribe_status)"
+    if is_connected "$status"; then
+      log "vpn connected"
+      return 0
+    fi
+    sleep 1
+  done
+  log "vpn connect timed out after ${VPN_TIMEOUT}s"
+  log "$(windscribe_status)"
+  return 1
+}
+
+connect_vpn_then_chatgpt() {
+  local status connect_pid deadline timed_out
+
+  if [[ ! -x "$WINDSCRIBE_CLI" ]]; then
+    log "missing windscribe-cli at ${WINDSCRIBE_CLI}; skip ChatGPT"
+    return 0
+  fi
+
+  ensure_windscribe_engine || true
+
+  if ! wait_for_cli; then
+    log "skip ChatGPT: windscribe engine not ready"
+    return 0
+  fi
+
+  if ! wait_until_logged_in; then
+    log "skip ChatGPT: not logged in to Windscribe"
+    return 0
+  fi
+
+  status="$(windscribe_status)"
+  if is_connected "$status"; then
+    log "vpn already connected"
+  else
+    log "cli connect ${WINDSCRIBE_LOCATION} ${WINDSCRIBE_PROTOCOL}"
+    "$WINDSCRIBE_CLI" connect -n "$WINDSCRIBE_LOCATION" "$WINDSCRIBE_PROTOCOL" &
+    connect_pid=$!
+    deadline=$((SECONDS + VPN_TIMEOUT))
+    timed_out=0
+    while kill -0 "$connect_pid" 2>/dev/null; do
+      hide_windscribe_ui
+      if (( SECONDS >= deadline )); then
+        timed_out=1
+        kill "$connect_pid" 2>/dev/null || true
+        break
+      fi
+      sleep 1
+    done
+    if wait "$connect_pid" 2>/dev/null; then
+      log "connect finished"
+    elif (( timed_out )); then
+      log "connect timed out after ${VPN_TIMEOUT}s"
+    else
+      log "windscribe connect exited non-zero"
+    fi
+  fi
+
+  if ! wait_until_connected; then
+    log "skip ChatGPT: vpn not connected"
+    hide_windscribe_ui
+    return 0
+  fi
+
+  hide_windscribe_ui
+  open_app "ChatGPT" "com.openai.chat"
+  enforce_login_placement
+}
+
+log "start pid=$$"
+connect_vpn_then_chatgpt &
+wait_until_tiling_ready
+launch_apps &
+enforce_login_placement &
+# Windows appear after `open` returns; keep follow suppressed until placement.
+( sleep "$PLACEMENT_TIMEOUT"; rm -f "$AUTOSTART_LOCK" ) &
+wait || true
+log "done"

@@ -11,6 +11,7 @@ yabai -m rule --remove 2>/dev/null || true
 # App -> workspace mapping
 declare -A APP_WORKSPACE=(
   ["WebStorm"]="W"
+  ["Cursor"]="C"
   ["CLion"]="C"
   ["Arc"]="V"
   ["Safari"]="V"
@@ -18,6 +19,7 @@ declare -A APP_WORKSPACE=(
   ["Google Chrome"]="G"
   ["ChatGPT"]="X"
   ["WezTerm"]="Z"
+  ["wezterm-gui"]="Z"
   ["Finder"]="E"
   ["Telegram"]="T"
   ["Discord"]="I"

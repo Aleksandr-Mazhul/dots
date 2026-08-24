@@ -5,21 +5,35 @@
 
 set -e
 
-yabai -m signal --remove 2>/dev/null || true
+remove_all_signals() {
+  local i count
+  count="$(yabai -m signal --list 2>/dev/null | jq 'length' 2>/dev/null || echo 0)"
+  [[ "$count" =~ ^[0-9]+$ ]] || count=0
+  for ((i = count - 1; i >= 0; i--)); do
+    yabai -m signal --remove "$i" 2>/dev/null || true
+  done
+}
 
-# Signal: Update bar when window focus changes
-yabai -m signal --add event=window_focused action="sketchybar --trigger window_focus 2>/dev/null || true" 2>/dev/null || true
+remove_all_signals
 
-# Signal: Track mouse position changes (optional - helps with window focus)
-# Disabled by default to prevent cursor jumps
-# yabai -m signal --add event=window_focused action="cliclick m:0,0" 2>/dev/null || true
+AUTOSTART_LOCK="/tmp/yabai.$(whoami).autostart"
 
-# Signal: Refresh when a window is created
-yabai -m signal --add event=window_created action="sketchybar --trigger window_focus 2>/dev/null || true" 2>/dev/null || true
+# Restore SA after Dock restart. yabairc adds this first, then this file
+# clears all signals, so it must be re-registered here.
+yabai -m signal --add event=dock_did_restart label=sa_dock action="sudo yabai --load-sa" 2>/dev/null || true
 
-# Signal: Follow newly created managed window to its space
-# Signal: Follow newly created window to its space
-yabai -m signal --add event=window_created action='
+# Cheap bar updates. Full sketchybar --reload is owned by yabairc once.
+yabai -m signal --add event=window_focused label=bar_window_focus action="sketchybar --trigger window_focus 2>/dev/null || true" 2>/dev/null || true
+yabai -m signal --add event=window_created label=bar_window_created action="sketchybar --trigger window_focus 2>/dev/null; sketchybar --trigger space_windows_change 2>/dev/null || true" 2>/dev/null || true
+yabai -m signal --add event=window_destroyed label=bar_window_destroyed action="sketchybar --trigger space_windows_change 2>/dev/null || true" 2>/dev/null || true
+
+# Follow new windows during interactive use, but not while session-startup
+# is flooding workspaces. That focus-storm looks like the bar/WM reloading.
+yabai -m signal --add event=window_created label=follow_window_created action='
+if [[ -f "'"$AUTOSTART_LOCK"'" ]]; then
+  exit 0
+fi
+
 WINDOW_JSON=$(yabai -m query --windows --window "$YABAI_WINDOW_ID" 2>/dev/null) || exit 0
 
 APP=$(echo "$WINDOW_JSON" | jq -r ".app")
@@ -46,18 +60,20 @@ if [[ "$FOLLOW" == "true" ]]; then
 fi
 ' 2>/dev/null || true
 
+# Telegram restores onto the focused space after window_created. Re-apply the
+# workspace a moment later so macOS Restore does not win.
+yabai -m signal --add event=window_created app="^Telegram$" label=place_telegram action='
+( sleep 0.4; yabai -m window "$YABAI_WINDOW_ID" --space T ) >/dev/null 2>&1 &
+' 2>/dev/null || true
+yabai -m signal --add event=window_created app="^(WezTerm|wezterm-gui)$" label=place_wezterm action='
+( sleep 0.4; yabai -m window "$YABAI_WINDOW_ID" --space Z ) >/dev/null 2>&1 &
+' 2>/dev/null || true
+
 # Signal: Ensure new windows respect sublayer rules
 
-# Signal: Handle Mission Control enter (restore full opacity)
-yabai -m signal --add event=mission_control_enter action="yabai -m config normal_window_opacity 1.0" 2>/dev/null || true
-
-# Signal: Handle Mission Control exit (restore active opacity)
-yabai -m signal --add event=mission_control_exit action="yabai -m config active_window_opacity 1.0" 2>/dev/null || true
-
-# Signal: Refresh on dock restart (yabai may need SA reload)
-
-# Signal: Handle display add/remove events
-yabai -m signal --add event=display_added action="sleep 0.5 && sketchybar --trigger display_change 2>/dev/null || true" 2>/dev/null || true
-yabai -m signal --add event=display_removed action="sleep 0.5 && sketchybar --trigger display_change 2>/dev/null || true" 2>/dev/null || true
+yabai -m signal --add event=mission_control_enter label=opacity_mc_enter action="yabai -m config normal_window_opacity 1.0" 2>/dev/null || true
+yabai -m signal --add event=mission_control_exit label=opacity_mc_exit action="yabai -m config active_window_opacity 1.0" 2>/dev/null || true
+yabai -m signal --add event=display_added label=bar_display_added action="sleep 0.5 && sketchybar --trigger display_change 2>/dev/null || true" 2>/dev/null || true
+yabai -m signal --add event=display_removed label=bar_display_removed action="sleep 0.5 && sketchybar --trigger display_change 2>/dev/null || true" 2>/dev/null || true
 
 exit 0

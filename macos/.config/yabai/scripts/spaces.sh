@@ -27,19 +27,23 @@ declare -A WORKSPACE_MAP=(
 
 # Initialize all workspace labels
 init_workspaces() {
-  local display_id="$1"
+  local needed=0 current label index
+  local -a order=(W C V D G X Z E T I P Q U Y R A)
 
-  for label in "${!WORKSPACE_MAP[@]}"; do
-    local index="${WORKSPACE_MAP[$label]}"
-    current=$(yabai -m query --spaces | jq 'length')
-    if [[ "$current" -lt "$index" ]]; then
-      yabai -m space --create 2>/dev/null || true
+  for index in "${WORKSPACE_MAP[@]}"; do
+    if (( index > needed )); then
+      needed=$index
     fi
   done
 
-  # Label the spaces
-  for label in "${!WORKSPACE_MAP[@]}"; do
-    local index="${WORKSPACE_MAP[$label]}"
+  current=$(yabai -m query --spaces | jq 'length')
+  while (( current < needed )); do
+    yabai -m space --create 2>/dev/null || true
+    current=$((current + 1))
+  done
+
+  for label in "${order[@]}"; do
+    index="${WORKSPACE_MAP[$label]}"
     yabai -m space "$index" --label "$label" 2>/dev/null || true
   done
 }

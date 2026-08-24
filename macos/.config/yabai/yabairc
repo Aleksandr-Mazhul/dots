@@ -20,8 +20,13 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 # Error logging
 YABAI_LOG="/tmp/yabai.$(whoami).log"
+YABAI_READY="/tmp/yabai.$(whoami).ready"
 exec 1> >(tee -a "$YABAI_LOG")
 exec 2> >(tee -a "$YABAI_LOG" >&2)
+
+# Drop any stale ready marker so session-startup cannot launch apps
+# against a previous yabai generation.
+rm -f "$YABAI_READY"
 
 echo "=== Yabai Config Start: $(date) ===" >&2
 
@@ -92,6 +97,20 @@ bash "$SCRIPTS_DIR/signals.sh" || echo "Warning: signals.sh failed" >&2
 echo "Validating configuration..." >&2
 bash "$SCRIPTS_DIR/spaces.sh" validate || echo "Warning: Space validation failed" >&2
 
-echo "=== Yabai Config Complete: $(date) ===" >&2
+# Publish readiness only after spaces, rules, and signals exist.
+# session-startup waits on this file matching the live yabai pid.
+printf '%s\n' "$PPID" >"$YABAI_READY"
+echo "=== Yabai Config Complete: $(date) pid=$PPID ===" >&2
+
+# Sketchybar often starts before spaces exist, so it needs exactly one
+# reload after yabairc. Do it off the ready-path so apps are not blocked.
+/usr/bin/nohup /bin/bash -c '
+  for i in $(seq 1 50); do
+    /opt/homebrew/bin/sketchybar --query bar >/dev/null 2>&1 && break
+    sleep 0.1
+  done
+  /opt/homebrew/bin/sketchybar --reload >/dev/null 2>&1 || true
+  /opt/homebrew/bin/sketchybar --trigger space_windows_change >/dev/null 2>&1 || true
+' >/dev/null 2>&1 &
 
 exit 0

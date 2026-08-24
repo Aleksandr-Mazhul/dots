@@ -4,15 +4,13 @@
 <dict>
   <key>Label</key>
   <string>com.alexandermazhul.sketchybar-trigger</string>
-
+  <!-- One sketchybar --reload is issued from yabairc after spaces exist.
+       Running another reload here raced yabai and rebuilt the bar twice. -->
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
-    <string>-lc</string>
-    <string>for i in {1..40}; do if /opt/homebrew/bin/yabai -m query --spaces >/dev/null 2>/dev/null; then break; fi; sleep 0.05; done; /opt/homebrew/bin/sketchybar --reload; /opt/homebrew/bin/sketchybar --trigger space_windows_change</string>
+    <string>/usr/bin/true</string>
   </array>
-
   <key>RunAtLoad</key>
-  <true/>
+  <false/>
 </dict>
 </plist>

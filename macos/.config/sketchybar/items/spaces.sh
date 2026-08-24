@@ -1,7 +1,9 @@
 #!/bin/bash
 
-for sid in $(yabai -m query --spaces | jq -r '.[].index'); do
-  label="$(yabai -m query --spaces | jq -r ".[] | select(.index==$sid) | .label")"
+spaces_json="$(yabai -m query --spaces 2>/dev/null || echo "[]")"
+
+printf '%s\n' "$spaces_json" | jq -r '.[] | "\(.index)\t\(.label // "")"' | while IFS=$'\t' read -r sid label; do
+  [ -n "$sid" ] || continue
   label="${label#_}"
 
   sketchybar --add space space.$sid left \
