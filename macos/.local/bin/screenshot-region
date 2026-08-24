@@ -1,16 +1,41 @@
 #!/bin/bash
-# Interactive region screenshot: clipboard first (instant paste), then save file.
+# Interactive region screenshot: clipboard first, then save ~/screenshots.
+# `screencapture -c FILE` does not write FILE; LaunchAgent capture without -c
+# also fails (no Screen Recording for file output). Clipboard then dump works.
 set -euo pipefail
 
 export HOME="/Users/alexandermazhul"
 export USER="alexandermazhul"
 DIR="${HOME}/screenshots"
-mkdir -p "$DIR"
+LOG="${HOME}/Library/Logs/screenshot-region.log"
+mkdir -p "$DIR" "$(dirname "$LOG")"
+
+exec >>"$LOG" 2>&1
+echo "$(date '+%F %T') start pid=$$"
+
+if ! /usr/sbin/screencapture -i -c -x; then
+  echo "$(date '+%F %T') cancelled or failed"
+  exit 0
+fi
 
 file="${DIR}/Screenshot $(date +'%Y-%m-%d at %H.%M.%S').png"
-# -c puts PNG on the clipboard as soon as the selection is made.
-# Filename is written in the same process; cancel exits non-zero.
-if ! /usr/sbin/screencapture -i -c -x "$file"; then
-  rm -f "$file"
+if ! /usr/bin/osascript <<EOF
+set pngData to (the clipboard as «class PNGf»)
+set outFile to POSIX file "${file}"
+set f to open for access outFile with write permission
+set eof of f to 0
+write pngData to f
+close access f
+EOF
+then
+  echo "$(date '+%F %T') failed writing clipboard PNG to ${file}"
   exit 0
+fi
+
+if [[ -s "$file" ]]; then
+  echo "$(date '+%F %T') saved ${file} ($(wc -c < "$file" | tr -d ' ') bytes)"
+  printf '%s\n' "${file}:$(stat -f %m "$file")" > "${TMPDIR:-/tmp}/screenshot-to-clipboard.last"
+else
+  echo "$(date '+%F %T') wrote empty ${file}"
+  rm -f "$file"
 fi

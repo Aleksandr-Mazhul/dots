@@ -6,6 +6,7 @@
   <string>com.alexandermazhul.screenshot-region</string>
   <key>ProgramArguments</key>
   <array>
+    <string>/bin/bash</string>
     <string>/Users/alexandermazhul/.local/bin/screenshot-region</string>
   </array>
   <key>RunAtLoad</key>
@@ -14,5 +15,16 @@
   <string>Interactive</string>
   <key>LimitLoadToSessionType</key>
   <string>Aqua</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>/Users/alexandermazhul</string>
+    <key>USER</key>
+    <string>alexandermazhul</string>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>/Users/alexandermazhul/Library/Logs/screenshot-region.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/alexandermazhul/Library/Logs/screenshot-region.log</string>
 </dict>
 </plist>

@@ -160,7 +160,7 @@
   u    S-M-lbrc
   o    S-M-rbrc
   p    pgdn
-  n    @cmd-ss
+  n    S-C-M-4
   esc  A-M-esc
 
   ;; Unmapped keys in Karabiner still sent Command (lazy left_command)
@@ -285,7 +285,6 @@
     hr-a (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/raycast/raycast-ai/ai-chat")
     hr-s (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/peduarte/silent-mention/index")
     hr-h (cmd /usr/bin/sudo -u alexandermazhul /usr/bin/open "raycast://extensions/raycast/clipboard-history/clipboard-history")
-    cmd-ss (cmd /bin/launchctl kickstart gui/501/com.alexandermazhul.screenshot-region)
   )
 )
 
@@ -338,7 +337,6 @@
     hr-a XX
     hr-s XX
     hr-h XX
-    cmd-ss XX
   )
 )
 
