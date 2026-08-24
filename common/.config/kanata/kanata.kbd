@@ -71,13 +71,13 @@
 
 (platform (macos)
   (defvirtualkeys
-    v-brup-go   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start brightness-up)
+    v-brup-go   (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start brightness-up)
     v-brup-stop (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-stop brightness-up)
-    v-brdn-go   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start brightness-down)
+    v-brdn-go   (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start brightness-down)
     v-brdn-stop (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-stop brightness-down)
-    v-volu-go   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start volume-up)
+    v-volu-go   (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start volume-up)
     v-volu-stop (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-stop volume-up)
-    v-vold-go   (cmd /bin/launchctl asuser 501 /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start volume-down)
+    v-vold-go   (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-start volume-down)
     v-vold-stop (cmd /Users/alexandermazhul/dotfiles/macos/.config/kanata/bin/macos-media-key hold-stop volume-down)
   )
 )

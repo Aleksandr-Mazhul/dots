@@ -1,8 +1,9 @@
 import AppKit
+import Darwin
 import Foundation
 
-/// Native-style media key: one NX_KEYTYPE pulse, then optional hold-repeat.
-/// Repeat is gated by a /tmp hold file so key-up always stops within ~10ms.
+/// Kanata only touches hold files (must return instantly).
+/// This process, running in the Aqua session, owns NX_KEYTYPE pulses and HUD.
 enum NXKey: Int32 {
     case soundUp = 0
     case soundDown = 1
@@ -25,8 +26,14 @@ let names: [String: NXKey] = [
     "previous": .previous, "prev": .previous,
 ]
 
-func holdPath(_ name: String) -> String { "/tmp/macos-media-key-\(name).hold" }
-func pidPath(_ name: String) -> String { "/tmp/macos-media-key-\(name).pid" }
+let holdKeys = ["brightness-up", "brightness-down", "volume-up", "volume-down"]
+let initialRepeatDelay: TimeInterval = 0.35
+let repeatInterval: TimeInterval = 0.08
+let staleHold: TimeInterval = 15
+let holdDir = "/tmp"
+
+func holdPath(_ name: String) -> String { "\(holdDir)/macos-media-key-\(name).hold" }
+func daemonPidPath() -> String { "\(holdDir)/macos-media-key.daemon.pid" }
 
 func pulse(_ key: NXKey) {
     for down in [true, false] {
@@ -45,92 +52,145 @@ func pulse(_ key: NXKey) {
         ), let cgEvent = event.cgEvent else { continue }
         cgEvent.post(tap: .cghidEventTap)
     }
-    RunLoop.current.run(until: Date().addingTimeInterval(0.015))
 }
 
-func isHolding(_ name: String) -> Bool {
-    access(holdPath(name), F_OK) == 0
-}
-
-/// Poll the hold file every 10ms. Returns false as soon as the key is released.
-func waitWhileHolding(_ name: String, seconds: Double) -> Bool {
-    let deadline = Date().addingTimeInterval(seconds)
-    while Date() < deadline {
-        if !isHolding(name) { return false }
-        usleep(10_000)
+func opposites(_ name: String) -> [String] {
+    switch name {
+    case "brightness-up": return ["brightness-down"]
+    case "brightness-down": return ["brightness-up"]
+    case "volume-up": return ["volume-down"]
+    case "volume-down": return ["volume-up"]
+    default: return []
     }
-    return isHolding(name)
+}
+
+func startHold(name: String) {
+    for other in opposites(name) {
+        unlink(holdPath(other))
+    }
+    unlink(holdPath(name))
+    FileManager.default.createFile(
+        atPath: holdPath(name),
+        contents: Data("1".utf8),
+        attributes: [.posixPermissions: 0o666]
+    )
 }
 
 func stopHold(name: String) {
     unlink(holdPath(name))
-    if let text = try? String(contentsOfFile: pidPath(name), encoding: .utf8),
-       let pid = pid_t(text.trimmingCharacters(in: .whitespacesAndNewlines)),
-       pid > 1
-    {
-        kill(pid, SIGTERM)
-        usleep(20_000)
-        kill(pid, SIGKILL)
-    }
-    unlink(pidPath(name))
 }
 
-func startHold(name: String, key: NXKey) {
-    stopHold(name: name)
-    FileManager.default.createFile(atPath: holdPath(name), contents: Data("1".utf8), attributes: [.posixPermissions: 0o666])
-    pulse(key)
-
-    let child = Process()
-    child.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
-    child.arguments = ["hold-run", name]
-    child.standardOutput = FileHandle.nullDevice
-    child.standardError = FileHandle.nullDevice
-    try? child.run()
-    try? "\(child.processIdentifier)".write(toFile: pidPath(name), atomically: true, encoding: .utf8)
+func isHolding(_ name: String) -> Bool {
+    var st = stat()
+    guard stat(holdPath(name), &st) == 0 else { return false }
+    let age = Date().timeIntervalSince1970 - TimeInterval(st.st_mtimespec.tv_sec)
+    if age > staleHold {
+        unlink(holdPath(name))
+        return false
+    }
+    return true
 }
 
-func runHold(name: String, key: NXKey) {
-    signal(SIGTERM) { _ in exit(0) }
-    signal(SIGINT) { _ in exit(0) }
-    let started = Date()
-    // Parent already sent the first step. Wait like a real key, then repeat.
-    guard waitWhileHolding(name, seconds: 0.30) else { return }
-    while isHolding(name) {
-        if Date().timeIntervalSince(started) > 12 { break }
-        pulse(key)
-        guard waitWhileHolding(name, seconds: 0.08) else { break }
+func currentHold() -> String? {
+    var newest: (name: String, mtime: TimeInterval)?
+    for name in holdKeys {
+        var st = stat()
+        guard stat(holdPath(name), &st) == 0 else { continue }
+        let age = Date().timeIntervalSince1970 - TimeInterval(st.st_mtimespec.tv_sec)
+        if age > staleHold {
+            unlink(holdPath(name))
+            continue
+        }
+        let mtime = TimeInterval(st.st_mtimespec.tv_sec)
+            + TimeInterval(st.st_mtimespec.tv_nsec) / 1_000_000_000
+        if newest == nil || mtime > newest!.mtime {
+            newest = (name, mtime)
+        }
     }
+    return newest?.name
+}
+
+func runDaemon() {
+    signal(SIGTERM) { _ in
+        unlink(daemonPidPath())
+        for name in holdKeys { unlink(holdPath(name)) }
+        exit(0)
+    }
+    signal(SIGINT) { _ in
+        unlink(daemonPidPath())
+        exit(0)
+    }
+
+    try? "\(ProcessInfo.processInfo.processIdentifier)".write(
+        toFile: daemonPidPath(),
+        atomically: true,
+        encoding: .utf8
+    )
+    chmod(daemonPidPath(), 0o644)
+
+    var active: String?
+    var holdBegan = Date.distantPast
+    var lastPulse = Date.distantPast
+
+    Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
+        let held = currentHold()
+        guard let name = held, let key = names[name] else {
+            active = nil
+            return
+        }
+        let now = Date()
+        if active != name {
+            active = name
+            holdBegan = now
+            pulse(key)
+            lastPulse = now
+            return
+        }
+        if now.timeIntervalSince(holdBegan) >= initialRepeatDelay,
+           now.timeIntervalSince(lastPulse) >= repeatInterval
+        {
+            pulse(key)
+            lastPulse = now
+        }
+    }
+
+    RunLoop.current.run()
 }
 
 let args = Array(CommandLine.arguments.dropFirst())
 guard let action = args.first else {
     fputs(
-        "usage: macos-media-key <hold-start|hold-stop|volume-up|...> [name]\n",
+        "usage: macos-media-key <daemon|hold-start|hold-stop|volume-up|...> [name]\n",
         stderr
     )
     exit(2)
 }
 
-if action == "hold-start" || action == "hold-stop" || action == "hold-run" {
-    guard let name = args.dropFirst().first, let key = names[name] else {
+if action == "daemon" {
+    runDaemon()
+    exit(0)
+}
+
+if action == "hold-start" || action == "hold-stop" {
+    guard let name = args.dropFirst().first, names[name] != nil else {
         fputs("hold commands need a key name\n", stderr)
         exit(2)
     }
-    switch action {
-    case "hold-start": startHold(name: name, key: key)
-    case "hold-stop": stopHold(name: name)
-    case "hold-run": runHold(name: name, key: key)
-    default: break
+    if action == "hold-start" {
+        startHold(name: name)
+    } else {
+        stopHold(name: name)
     }
     exit(0)
 }
 
 guard let key = names[action] else {
     fputs(
-        "usage: macos-media-key <hold-start|hold-stop|volume-up|volume-down|mute|brightness-up|brightness-down|play-pause|next|prev> [name]\n",
+        "usage: macos-media-key <daemon|hold-start|hold-stop|volume-up|volume-down|mute|brightness-up|brightness-down|play-pause|next|prev> [name]\n",
         stderr
     )
     exit(2)
 }
 
 pulse(key)
+RunLoop.current.run(until: Date().addingTimeInterval(0.03))
